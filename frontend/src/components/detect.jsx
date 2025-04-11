@@ -4,12 +4,17 @@ import { UploadCloud, Loader2 } from "lucide-react";
 
 export default function DiseaseDetector() {
   const [image, setImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
-    setResult(null); // Reset result on new upload
+    const file = e.target.files[0];
+    setImage(file);
+    setResult(null);
+    if (file) {
+      setPreviewUrl(URL.createObjectURL(file));
+    }
   };
 
   const handleSubmit = async () => {
@@ -45,10 +50,17 @@ export default function DiseaseDetector() {
         className="block w-full border rounded-lg p-2 border-green-300"
       />
 
+      {previewUrl && (
+        <div className="mt-4">
+          <p className="text-green-800 font-medium mb-2">🔍 Preview:</p>
+          <img src={previewUrl} alt="Preview" className="w-full h-auto rounded-lg shadow" />
+        </div>
+      )}
+
       <button
         onClick={handleSubmit}
         disabled={loading || !image}
-        className="bg-green-700 text-white px-4 py-2 rounded-xl hover:bg-green-800 flex items-center gap-2"
+        className="bg-green-700 text-white px-4 py-2 rounded-xl hover:bg-green-800 flex items-center gap-2 w-full justify-center"
       >
         {loading ? <Loader2 className="animate-spin" /> : <UploadCloud />}
         {loading ? "Detecting..." : "Upload and Detect"}
