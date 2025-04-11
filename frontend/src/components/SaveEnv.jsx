@@ -4,47 +4,7 @@ import axios from 'axios';
 export function SaveEnv() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const hardcodedData = {
-    location: "Jamshedpur",
-    climate: {
-      temperatureMax: 33.4,
-      temperatureMin: 21.3,
-      precipitation: 0
-    },
-    suggestions: [
-      {
-        tree: "Indian Rosewood (Dalbergia sissoo)",
-        reasons: "Tolerates high temperatures and dry periods, common in Jamshedpur's climate. It can also withstand some degree of waterlogging during monsoons.",
-        growthTime: "Moderate to fast, reaching maturity in 15-20 years.",
-        benefits: "Provides valuable timber, nitrogen fixation in soil, shade, and supports biodiversity."
-      },
-      {
-        tree: "Neem (Azadirachta indica)",
-        reasons: "Highly drought-resistant and thrives in hot climates. Adaptable to various soil types and requires minimal rainfall.",
-        growthTime: "Fast-growing, reaching maturity in 5-7 years.",
-        benefits: "Natural insecticide, medicinal properties, improves soil fertility, provides shade, and absorbs air pollutants."
-      },
-      {
-        tree: "Indian Banyan (Ficus benghalensis)",
-        reasons: "Adaptable to hot and dry conditions, common in Jamshedpur. Once established, it's highly drought-tolerant.",
-        growthTime: "Slow-growing, but exceptionally long-lived. Can take several decades to reach full size.",
-        benefits: "Provides extensive shade, supports a wide range of wildlife, helps control soil erosion, and has cultural significance."
-      },
-      {
-        tree: "Arjun (Terminalia arjuna)",
-        reasons: "Tolerant of a range of temperatures and can withstand dry spells. It prefers well-drained soil and can handle Jamshedpur's climate.",
-        growthTime: "Moderate growth rate, reaching maturity in about 20-25 years.",
-        benefits: "Medicinal properties, particularly for heart health. Provides good shade and supports biodiversity."
-      },
-      {
-        tree: "Bamboo (Bambusoideae)",
-        reasons: "Many bamboo species thrive in tropical climates like Jamshedpur's. Some are drought-tolerant while others prefer more humid conditions.",
-        growthTime: "Very fast-growing, some species can reach maturity in just a few years.",
-        benefits: "Versatile material for construction and crafts. Carbon sequestration, soil erosion control, and creates habitat for wildlife."
-      }
-    ]
-  };
-  setData(hardcodedData); // Set hardcoded data initially
+ // Set hardcoded data initially
   const handleGetSuggestions = async () => {
     setLoading(true);
     navigator.geolocation.getCurrentPosition(async (position) => {
