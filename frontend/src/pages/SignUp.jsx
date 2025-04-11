@@ -1,5 +1,8 @@
 // src/pages/Register.jsx
 import { useState } from "react";
+import axios from "axios" ;
+import {useNavigate} from "react-router-dom" ;
+
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -9,25 +12,32 @@ export default function Signup() {
     role: "user",
   });
 
+  const navigate = useNavigate() ;
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    // setError("");
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/signup", formData);
-      const { token, user } = res.data;
-      localStorage.setItem("token", token);
-      localStorage.setItem("userRole", user.role);
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        formData
+      );
 
-      if (user.role === "user") navigate("/udash");
-      else if (user.role === "ranger") navigate("/rangerdash");
-      else if (user.role === "biologist") navigate("/edash");
+      const { token, role } = res.data;
+      localStorage.setItem("token", token);
+      localStorage.setItem("userRole", role);
+
+      if (role === "user") navigate("/udash");
+      else if (role === "admin") navigate("/rangerdash");
+      else if (role === "ecologist") navigate("/edash");
     } catch (err) {
-      setError(err.response?.data?.error || "Something went wrong.");
+      // setError(err.response?.data?.error || "Something went wrong.");
+      console.log(err);
     }
   };
 
@@ -73,8 +83,8 @@ export default function Signup() {
             className="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400"
           >
             <option value="user">User</option>
-            <option value="ranger">Forest Ranger</option>
-            <option value="biologist">Biologist / Ecologist</option>
+            <option value="admin">Admin</option>
+            <option value="ecologist">Biologist / Ecologist</option>
           </select>
 
           <button
@@ -86,7 +96,10 @@ export default function Signup() {
         </form>
 
         <p className="mt-4 text-sm text-center text-gray-500">
-          Already have an account? <a href="/login" className="text-green-600 underline">Login</a>
+          Already have an account?{" "}
+          <a href="/login" className="text-green-600 underline">
+            Login
+          </a>
         </p>
       </div>
     </div>
