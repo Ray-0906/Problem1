@@ -1,8 +1,15 @@
 import PlantObservation from "../models/PlantObservation.js";
 
 export const getPendingObservations = async (req, res) => {
-  const observations = await PlantObservation.find({ status: "pending_review" });
-  res.json(observations);
+  try {
+    const pending = await PlantObservation.find({
+      "prediction.status": "pending",
+    });
+    // optional: populate user info
+    res.status(200).json(pending);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch pending observations." });
+  }
 };
 
 export const reviewObservation = async (req, res) => {
