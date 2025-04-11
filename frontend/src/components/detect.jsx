@@ -30,6 +30,8 @@ export default function DiseaseDetector() {
           "Content-Type": "multipart/form-data",
         },
       });
+
+      console.log("Detection result:", res.data);
       setResult(res.data);
     } catch (err) {
       console.error("Detection failed", err);
@@ -72,9 +74,9 @@ export default function DiseaseDetector() {
             <p className="text-red-600">{result.error}</p>
           ) : (
             <>
-              <h3 className="font-bold text-green-900">🌿 Plant: {result.plantName}</h3>
-              <p><strong>🦠 Disease:</strong> {result.diseaseName}</p>
-              <p><strong>💊 Treatment:</strong> {result.treatment}</p>
+              <h3 className="font-bold text-green-900">🌿 Plant: </h3>
+              <p><strong>🦠 Disease:</strong> {result.disease}</p>
+              <p><strong>💊 Treatment:</strong> {result.cure}</p>
             </>
           )}
         </div>
