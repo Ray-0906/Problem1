@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const plantObservationSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    name: { type: String },
     imageUrl: { type: String, required: true },
     location: {
       type: {
@@ -25,6 +26,7 @@ const plantObservationSchema = new mongoose.Schema(
       },
     },
     isReviewed: { type: Boolean, default: false },
+    status:{type:String, enum:["endangered","not endangered"], default:"not endangered"},
   },
   { timestamps: true }
 );

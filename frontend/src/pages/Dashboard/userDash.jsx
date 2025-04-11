@@ -4,6 +4,7 @@ import { Home, ImagePlus, History, Gift, User, LogOut, Save } from "lucide-react
 import ScanPlant from "../../components/Scanplant";
 import UserObservationHistory from "../../components/Plantobservation";
 import { SaveEnv } from "../../components/SaveEnv";
+import EndangeredSpeciesMap from "../../components/Endanger";
 
 const menuItems = [
   { label: "Home", icon: <Home />, key: "home" },
@@ -19,7 +20,8 @@ export default function UserDashboard() {
   const renderContent = () => {
     switch (active) {
       case "home":
-        return <div>🌿 Welcome to GreenGuard! Scan a plant to begin.
+        return <div>🌿 Welcome to GreenGuard! 
+          <EndangeredSpeciesMap/>
           <SaveEnv/>
         </div>;
       case "scan":

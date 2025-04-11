@@ -2,6 +2,7 @@ import express from "express";
 import {
   createObservation,
   getAllObservations,
+  getEndangeredSpecies,
   getUserObservations,
 } from "../controllers/observationController.js";
 import { protect } from "../middlewares/authMiddleware.js";
@@ -16,6 +17,8 @@ router.get("/user", protect, (req,res)=>{
   console.log("User ID:", req.user._id); // Log the user ID for debugging
   getUserObservations(req, res);
 });
+
+router.get("/endangered", protect, getEndangeredSpecies);
 // Get all observations
 router.get("/", protect, getAllObservations);
 
