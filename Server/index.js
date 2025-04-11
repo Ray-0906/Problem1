@@ -8,7 +8,12 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import observationRoutes from "./routes/observationRoutes.js";
 import ecologistRoutes from "./routes/ecologistRoutes.js";
+<<<<<<< HEAD
 import climateRoutes from "./routes/climateRoutes.js";
+=======
+import { getUserObservations } from "./controllers/observationController.js";
+import { protect } from "./middlewares/authMiddleware.js";
+>>>>>>> a1f7d0dacc37e8084aff2c74a20f243312fb20f5
 
 
 const app = express();
@@ -29,9 +34,7 @@ app.use("/api/ecologist", ecologistRoutes);
 app.use("/api/climate", climateRoutes);
 
 // Default Route
-app.get("/", (req, res) => {
-  res.send("Plant Identification API is running 🚀");
-});
+app.get("/usersplant",protect,getUserObservations);
 
 // Start server
 const PORT = process.env.PORT || 5000;
