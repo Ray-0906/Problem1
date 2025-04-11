@@ -8,7 +8,7 @@ import { protect, ecologistOnly } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 // Get all observations that need ecologist review
-router.get("/pending", protect, ecologistOnly, getPendingObservations);
+router.get("/pending", getPendingObservations);
 
 // Review and update an observation (status / identification)
 router.put("/:id/review", protect, ecologistOnly, reviewObservation);

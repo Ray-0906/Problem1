@@ -5,9 +5,12 @@ import runMLModel from "../utils/runMLModel.js"; // we will build this
 export const createObservation = async (req, res) => {
   const { latitude, longitude } = req.body;
 
-  const prediction = await runMLModel(req.file.path);
-  
  // const prediction = await runMLModel(req.file.path);
+  
+  const prediction = {
+    species: "Test Species",
+    confidence: 0.75,
+  };
  console.log(req.file.path);
   const observation = new PlantObservation({
     user: req.user._id,
