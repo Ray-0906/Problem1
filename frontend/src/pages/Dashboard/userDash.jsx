@@ -5,12 +5,14 @@ import ScanPlant from "../../components/Scanplant";
 import UserObservationHistory from "../../components/Plantobservation";
 import { SaveEnv } from "../../components/SaveEnv";
 import EndangeredSpeciesMap from "../../components/Endanger";
+import DiseaseDetector from "../../components/detect";
 
 const menuItems = [
   { label: "Home", icon: <Home />, key: "home" },
   { label: "Scan Plant", icon: <ImagePlus />, key: "scan" },
   { label: "History", icon: <History />, key: "history" },
   { label: "Rewards", icon: <Gift />, key: "rewards" },
+  { label: "Detect Disese", icon: <Gift />, key: "detect" },
   { label: "Profile", icon: <User />, key: "profile" },
 ];
 
@@ -31,7 +33,9 @@ export default function UserDashboard() {
         return <div><UserObservationHistory/></div>;
       case "rewards":
         return <div>🏆 Your earned tokens and rewards.</div>;
-      case "profile":
+      case "detect":
+        return <div>👤 <DiseaseDetector/></div>;
+        case "profile":
         return <div>👤 Profile settings and account info.</div>;
       default:
         return null;

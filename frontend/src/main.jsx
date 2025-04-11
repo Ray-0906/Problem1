@@ -9,7 +9,7 @@ import AuthLayout from './components/AuthLayout.jsx';
 import Login from './pages/login.jsx';
 import Signup from './pages/SignUp.jsx';
 import UserDashboard from './pages/Dashboard/userDash.jsx';
-import RangerDashboard from './pages/Dashboard/rangerDash.jsx';
+import RangerDashboard from './pages/Dashboard/ranDash.jsx';
 import EcologistDashboard from './pages/Dashboard/ecoDash.jsx';
 
 // Page
@@ -40,6 +40,7 @@ const router = createBrowserRouter([
     path: '/rangerdash',
     element: <RangerDashboard/>,
   },
+  
   {
     path: '/login',
     element: <Login />,
