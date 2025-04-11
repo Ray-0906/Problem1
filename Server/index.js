@@ -8,6 +8,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import observationRoutes from "./routes/observationRoutes.js";
 import ecologistRoutes from "./routes/ecologistRoutes.js";
+import climateRoutes from "./routes/climateRoutes.js";
 
 
 const app = express();
@@ -25,6 +26,7 @@ connectDB();
 app.use("/api/auth", authRoutes);
 app.use("/api/observations", observationRoutes);
 app.use("/api/ecologist", ecologistRoutes);
+app.use("/api/climate", climateRoutes);
 
 // Default Route
 app.get("/", (req, res) => {
