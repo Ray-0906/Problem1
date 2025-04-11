@@ -1,6 +1,11 @@
 // src/pages/EcologistDashboard.jsx
 import { useState } from "react";
 import { FileSearch, CheckCircle, Database, BookOpen, User, LogOut } from "lucide-react";
+import { ReviewReports } from "../../components/ReviewReports";
+import { Submissions } from "../../components/Submissions";
+import { UpdateDatabase } from "../../components/UpdateDb";
+import { ResearchLog } from "../../components/ResearchLog";
+import { Profile } from "../../components/Profile";
 
 const ecoMenu = [
   { label: "Review Reports", icon: <FileSearch />, key: "review" },
@@ -16,15 +21,17 @@ export default function EcologistDashboard() {
   const renderContent = () => {
     switch (active) {
       case "review":
-        return <div>🧾 Review new user reports of unidentified plants/diseases.</div>;
+        return <div>🧾 Review new user reports of unidentified plants/diseases. <ReviewReports/></div>;
       case "submissions":
-        return <div>✅ Approve/reject new species or disease submissions.</div>;
+        return <div>✅ Approve/reject new species or disease submissions.<Submissions/></div>;
       case "database":
-        return <div>📊 Add new entries to plant/disease database.</div>;
+        return <div>📊 Add new entries to plant/disease database.<UpdateDatabase/></div>;
       case "log":
-        return <div>📖 View your past research contributions and logs.</div>;
+        return <div>📖 View your past research contributions and logs.
+        <ResearchLog/>
+        </div>;
       case "profile":
-        return <div>👤 Update profile and preferences.</div>;
+        return <div>👤 Update profile and preferences.<Profile/></div>;
       default:
         return null;
     }
