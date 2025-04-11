@@ -63,3 +63,26 @@ export const getUserObservations = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch observations" });
   }
 };
+
+// controllers/plantObservationController.js
+
+//import PlantObservation from '../models/observeplantations.js';
+
+export const getEndangeredSpecies = async (req, res) => {
+  try {
+    const observations = await PlantObservation.find({ status: 'endangered' }).select(
+      'prediction.species status location.coordinates'
+    );
+
+    const formatted = observations.map(obs => ({
+      name: obs.prediction?.species || 'Unknown Species',
+      status: obs.status,
+      coordinates: obs.location.coordinates, // [lng, lat]
+    }));
+
+    res.status(200).json(formatted);
+  } catch (error) {
+    console.error('Error fetching endangered species:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
