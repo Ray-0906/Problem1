@@ -1,6 +1,9 @@
 // src/pages/UserDashboard.jsx
 import { useState } from "react";
-import { Home, ImagePlus, History, Gift, User, LogOut } from "lucide-react";
+import { Home, ImagePlus, History, Gift, User, LogOut, Save } from "lucide-react";
+import ScanPlant from "../../components/Scanplant";
+import UserObservationHistory from "../../components/Plantobservation";
+import { SaveEnv } from "../../components/SaveEnv";
 
 const menuItems = [
   { label: "Home", icon: <Home />, key: "home" },
@@ -12,15 +15,18 @@ const menuItems = [
 
 export default function UserDashboard() {
   const [active, setActive] = useState("home");
-
+ 
   const renderContent = () => {
     switch (active) {
       case "home":
-        return <div>🌿 Welcome to GreenGuard! Scan a plant to begin.</div>;
+        return <div>🌿 Welcome to GreenGuard! Scan a plant to begin.
+          <SaveEnv/>
+        </div>;
       case "scan":
-        return <div>📷 Upload or capture plant image here.</div>;
+        return <div><ScanPlant/></div>
+        ;
       case "history":
-        return <div>🕒 List of your scans and results.</div>;
+        return <div><UserObservationHistory/></div>;
       case "rewards":
         return <div>🏆 Your earned tokens and rewards.</div>;
       case "profile":
