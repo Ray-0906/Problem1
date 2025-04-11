@@ -12,7 +12,7 @@ const plantObservationSchema = new mongoose.Schema(
       },
       coordinates: {
         type: [Number], // [longitude, latitude]
-        required: true,
+        // required: true,
       },
     },
     prediction: {
