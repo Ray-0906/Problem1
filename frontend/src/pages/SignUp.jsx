@@ -13,10 +13,22 @@ export default function Signup() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Add register logic here
-    console.log("Registering", formData);
+    setError("");
+
+    try {
+      const res = await axios.post("http://localhost:5000/api/auth/signup", formData);
+      const { token, user } = res.data;
+      localStorage.setItem("token", token);
+      localStorage.setItem("userRole", user.role);
+
+      if (user.role === "user") navigate("/udash");
+      else if (user.role === "ranger") navigate("/rangerdash");
+      else if (user.role === "biologist") navigate("/edash");
+    } catch (err) {
+      setError(err.response?.data?.error || "Something went wrong.");
+    }
   };
 
   return (
