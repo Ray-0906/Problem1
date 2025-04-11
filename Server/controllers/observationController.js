@@ -3,8 +3,10 @@ import User from "../models/user.js";
 import { runMLModel, runMLModel2 } from "../utils/runMLModel.js"; // we will build this
 
 export const createObservation = async (req, res) => {
+
   try {
     const { latitude, longitude } = req.body;
+
 
     const prediction = await runMLModel(req.file.path);
 
