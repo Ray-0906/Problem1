@@ -1,6 +1,9 @@
 // src/pages/RangerDashboard.jsx
 import { useState } from "react";
 import { ShieldCheck, MapPin, ClipboardList, AlertCircle, User, LogOut } from "lucide-react";
+import NearbyReports from "../../components/nearby";
+import UnconfirmedEcologistReviews from "../../components/Assignment";
+import EndangeredSpeciesMap from "../../components/Endanger";
 
 const rangerMenu = [
   { label: "Dashboard", icon: <ShieldCheck />, key: "dashboard" },
@@ -9,18 +12,17 @@ const rangerMenu = [
   { label: "Community Alerts", icon: <AlertCircle />, key: "alerts" },
   { label: "Profile", icon: <User />, key: "profile" },
 ];
-
 export default function RangerDashboard() {
   const [active, setActive] = useState("dashboard");
 
   const renderContent = () => {
     switch (active) {
       case "dashboard":
-        return <div>👮 Welcome Ranger! Monitor your zone and take action.</div>;
+        return <div>👮 Welcome Ranger! Monitor your zone and take action.<EndangeredSpeciesMap/></div>;
       case "reports":
-        return <div>📍 View recent disease/plant reports near your location.</div>;
+        return <div>📍View recent disease/plant reports near your location.<NearbyReports/></div>;
       case "assignments":
-        return <div>📝 Your assigned areas and active tasks.</div>;
+        return <div>📝 Your assigned areas and active tasks.<UnconfirmedEcologistReviews/></div>;
       case "alerts":
         return <div>🚨 Emergency or critical alerts from users.</div>;
       case "profile":

@@ -9,7 +9,7 @@ import AuthLayout from './components/AuthLayout.jsx';
 import Login from './pages/login.jsx';
 import Signup from './pages/SignUp.jsx';
 import UserDashboard from './pages/Dashboard/userDash.jsx';
-import RangerDashboard from './pages/Dashboard/ranDash.jsx';
+import RangerDashboard from './pages/Dashboard/rangerDash.jsx';
 import EcologistDashboard from './pages/Dashboard/ecoDash.jsx';
 
 // Page

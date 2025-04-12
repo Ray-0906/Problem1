@@ -6,12 +6,14 @@ import { Submissions } from "../../components/Submissions";
 import { UpdateDatabase } from "../../components/UpdateDb";
 import { ResearchLog } from "../../components/ResearchLog";
 import { Profile } from "../../components/Profile";
+import EndangeredSpeciesMap from "../../components/Endanger";
+import DiseaseDetector from "../../components/detect";
 
 const ecoMenu = [
   { label: "Review Reports", icon: <FileSearch />, key: "review" },
   { label: "Submissions", icon: <CheckCircle />, key: "submissions" },
-  { label: "Update Database", icon: <Database />, key: "database" },
-  { label: "Research Log", icon: <BookOpen />, key: "log" },
+  { label: "Endangered Map", icon: <Database />, key: "database" },
+  { label: "Disease Detector", icon: <BookOpen />, key: "log" },
   { label: "Profile", icon: <User />, key: "profile" },
 ];
 
@@ -25,10 +27,10 @@ export default function EcologistDashboard() {
       case "submissions":
         return <div>✅ Approve/reject new species or disease submissions.<Submissions/></div>;
       case "database":
-        return <div>📊 Add new entries to plant/disease database.<UpdateDatabase/></div>;
+        return <div>📊 Add new entries to plant/disease database.<EndangeredSpeciesMap/></div>;
       case "log":
         return <div>📖 View your past research contributions and logs.
-        <ResearchLog/>
+        <DiseaseDetector/>
         </div>;
       case "profile":
         return <div>👤 Update profile and preferences.<Profile/></div>;
