@@ -117,7 +117,7 @@ export const getUserObservations = async (req, res) => {
 export const getEndangeredSpecies = async (req, res) => {
   try {
     const observations = await PlantObservation.find({
-    
+  
     }).select("prediction.species status location.coordinates");
 
     const formatted = observations.map((obs) => ({

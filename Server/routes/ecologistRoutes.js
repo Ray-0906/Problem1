@@ -12,7 +12,7 @@ const router = express.Router();
 router.get("/pending", getPendingObservations);
 router.get("/unconfirmed",getPendingEcologistReviews);
 // Review and update an observation (status / identification)
-router.put("/:id/review", protect, ecologistOnly, reviewObservation);
+router.put("/review/:id", protect, ecologistOnly, reviewObservation);
 
 export default router;
 // This code defines the routes for ecologists to review plant observations.

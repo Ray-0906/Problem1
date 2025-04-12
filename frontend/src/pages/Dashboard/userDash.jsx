@@ -6,25 +6,28 @@ import UserObservationHistory from "../../components/Plantobservation";
 import { SaveEnv } from "../../components/SaveEnv";
 import EndangeredSpeciesMap from "../../components/Endanger";
 import DiseaseDetector from "../../components/detect";
+import { Profile } from "../../components/Profile";
+import Logout from "../../components/Logout";
+import { useNavigate } from "react-router-dom";
 
 const menuItems = [
   { label: "Home", icon: <Home />, key: "home" },
   { label: "Scan Plant", icon: <ImagePlus />, key: "scan" },
   { label: "History", icon: <History />, key: "history" },
-  { label: "Rewards", icon: <Gift />, key: "rewards" },
+  { label: "Save Biodiversity", icon: <Gift />, key: "rewards" },
   { label: "Detect Disese", icon: <Gift />, key: "detect" },
   { label: "Profile", icon: <User />, key: "profile" },
 ];
 
 export default function UserDashboard() {
   const [active, setActive] = useState("home");
- 
+  const navigate = useNavigate();
   const renderContent = () => {
     switch (active) {
       case "home":
         return <div>🌿 Welcome to GreenGuard! 
           <EndangeredSpeciesMap/>
-          <SaveEnv/>
+         
         </div>;
       case "scan":
         return <div><ScanPlant/></div>
@@ -32,14 +35,20 @@ export default function UserDashboard() {
       case "history":
         return <div><UserObservationHistory/></div>;
       case "rewards":
-        return <div>🏆 Your earned tokens and rewards.</div>;
+        return <div>🏆 Save Your Environment. <SaveEnv/></div>;
       case "detect":
         return <div>👤 <DiseaseDetector/></div>;
-        case "profile":
-        return <div>👤 Profile settings and account info.</div>;
+      case "profile":
+        return <div>👤 Profile settings and account info.Profile<Profile/></div>;
       default:
         return null;
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userRole");
+    navigate("/");
   };
 
   return (
@@ -61,8 +70,8 @@ export default function UserDashboard() {
           </button>
         ))}
 
-        <button className="flex items-center gap-3 px-4 py-2 rounded-xl w-full text-left hover:bg-red-600/70 mt-10">
-          <LogOut />
+        <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 rounded-xl w-full text-left hover:bg-red-600/70 mt-10">
+          <LogOut/>
           Logout
         </button>
       </aside>

@@ -1,6 +1,13 @@
 // src/pages/EcologistDashboard.jsx
 import { useState } from "react";
-import { FileSearch, CheckCircle, Database, BookOpen, User, LogOut } from "lucide-react";
+import {
+  FileSearch,
+  CheckCircle,
+  Database,
+  BookOpen,
+  User,
+  LogOut,
+} from "lucide-react";
 import ReviewPanel from "../../components/ReviewReports";
 import { Submissions } from "../../components/Submissions";
 import { UpdateDatabase } from "../../components/UpdateDb";
@@ -8,7 +15,7 @@ import { ResearchLog } from "../../components/ResearchLog";
 import { Profile } from "../../components/Profile";
 import EndangeredSpeciesMap from "../../components/Endanger";
 import DiseaseDetector from "../../components/detect";
-
+import { useNavigate } from "react-router-dom";
 const ecoMenu = [
   { label: "Review Reports", icon: <FileSearch />, key: "review" },
   { label: "Submissions", icon: <CheckCircle />, key: "submissions" },
@@ -19,24 +26,53 @@ const ecoMenu = [
 
 export default function EcologistDashboard() {
   const [active, setActive] = useState("review");
-
+  const navigate = useNavigate();
   const renderContent = () => {
     switch (active) {
       case "review":
-        return <div>🧾 Review new user reports of unidentified plants/diseases. <ReviewPanel/></div>;
+        return (
+          <div>
+            🧾 Review new user reports of unidentified plants/diseases.{" "}
+            <ReviewPanel />
+          </div>
+        );
       case "submissions":
-        return <div>✅ Approve/reject new species or disease submissions.<Submissions/></div>;
+        return (
+          <div>
+            ✅ Approve/reject new species or disease submissions.
+            <Submissions />
+          </div>
+        );
       case "database":
-        return <div>📊 Add new entries to plant/disease database.<EndangeredSpeciesMap/></div>;
+        return (
+          <div>
+            📊 Add new entries to plant/disease database.
+            <EndangeredSpeciesMap />
+          </div>
+        );
       case "log":
-        return <div>📖 View your past research contributions and logs.
-        <DiseaseDetector/>
-        </div>;
+        return (
+          <div>
+            📖 View your past research contributions and logs.
+            <DiseaseDetector />
+          </div>
+        );
       case "profile":
-        return <div>👤 Update profile and preferences.<Profile/></div>;
+        return (
+          <div>
+            👤 Update profile and preferences.
+            <Profile />
+          </div>
+        );
       default:
         return null;
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userRole");
+    navigate("/", { replace: true });
   };
 
   return (
@@ -58,7 +94,7 @@ export default function EcologistDashboard() {
           </button>
         ))}
 
-        <button className="flex items-center gap-3 px-4 py-2 rounded-xl w-full text-left hover:bg-red-600/70 mt-10">
+        <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 rounded-xl w-full text-left hover:bg-red-600/70 mt-10">
           <LogOut />
           Logout
         </button>
@@ -69,7 +105,9 @@ export default function EcologistDashboard() {
         <h2 className="text-xl font-bold text-green-900 mb-4 capitalize">
           {active.replace("-", " ")}
         </h2>
-        <div className="bg-white shadow-md rounded-xl p-6">{renderContent()}</div>
+        <div className="bg-white shadow-md rounded-xl p-6">
+          {renderContent()}
+        </div>
       </main>
     </div>
   );

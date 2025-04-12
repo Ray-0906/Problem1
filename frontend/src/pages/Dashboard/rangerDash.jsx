@@ -4,7 +4,7 @@ import { ShieldCheck, MapPin, ClipboardList, AlertCircle, User, LogOut } from "l
 import NearbyReports from "../../components/nearby";
 import UnconfirmedEcologistReviews from "../../components/Assignment";
 import EndangeredSpeciesMap from "../../components/Endanger";
-
+import { useNavigate } from "react-router-dom";
 const rangerMenu = [
   { label: "Dashboard", icon: <ShieldCheck />, key: "dashboard" },
   { label: "Nearby Reports", icon: <MapPin />, key: "reports" },
@@ -14,7 +14,7 @@ const rangerMenu = [
 ];
 export default function RangerDashboard() {
   const [active, setActive] = useState("dashboard");
-
+  const navigate = useNavigate();
   const renderContent = () => {
     switch (active) {
       case "dashboard":
@@ -30,6 +30,12 @@ export default function RangerDashboard() {
       default:
         return null;
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userRole");
+    navigate("/");
   };
 
   return (
@@ -51,8 +57,8 @@ export default function RangerDashboard() {
           </button>
         ))}
 
-        <button className="flex items-center gap-3 px-4 py-2 rounded-xl w-full text-left hover:bg-red-600/70 mt-10">
-          <LogOut />
+        <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 rounded-xl w-full text-left hover:bg-red-600/70 mt-10">
+         <LogOut/>
           Logout
         </button>
       </aside>
