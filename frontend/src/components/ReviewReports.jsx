@@ -27,7 +27,7 @@ export default function ReviewPanel() {
         confirmedSpecies: editSpecies,
         endangeredStatus: editEndangered ? "endangered" : "not endangered",
         notes:reviewNotes,
-      });
+      },{headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }});
       setSelectedObs(null);
       fetchPending();
     } catch (err) {

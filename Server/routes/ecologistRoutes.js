@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  getPendingEcologistReviews,
   getPendingObservations,
   reviewObservation,
 } from "../controllers/ecologistController.js";
@@ -9,7 +10,7 @@ const router = express.Router();
 
 // Get all observations that need ecologist review
 router.get("/pending", getPendingObservations);
-
+router.get("/unconfirmed",getPendingEcologistReviews);
 // Review and update an observation (status / identification)
 router.put("/:id/review", protect, ecologistOnly, reviewObservation);
 
