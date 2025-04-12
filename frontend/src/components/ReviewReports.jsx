@@ -3,101 +3,146 @@ import axios from "axios";
 
 export default function ReviewPanel() {
   const [observations, setObservations] = useState([]);
-  const [selected, setSelected] = useState(null);
+  const [selectedObs, setSelectedObs] = useState(null);
+  const [editSpecies, setEditSpecies] = useState("");
+  const [editEndangered, setEditEndangered] = useState(false);
+  const [reviewNotes, setReviewNotes] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const fetchPending = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:5000/api/ecologist/pending"
+      );
+      setObservations(res.data);
+    } catch (err) {
+      console.error("Failed to load pending reports", err);
+    }
+  };
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/ecologist/pending", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-    .then((res) => {
-      console.log("Fetched data:", res.data);
-      setObservations(res.data); // Should be an array!
-    })
-    .catch((err) => {
-      console.error("Error fetching observations", err);
-    });
+    fetchPending();
   }, []);
-  
-  
 
-  const markReviewed = async () => {
-    await axios.put(`/api/ecologist/review/${selected._id}`, {
-      species: selected.correctedSpecies || selected.prediction.species,
-      confidence: selected.correctedConfidence || selected.prediction.confidence,
-      action: "reviewed",
-    });
-    setSelected(null);
-    setObservations((prev) => prev.filter((obs) => obs._id !== selected._id));
+  const handleReview = async () => {
+    if (!selectedObs) return;
+    setLoading(true);
+    try {
+      await axios.put(
+        `http://localhost:5000/api/ecologist/review/${selectedObs._id}`,
+        {
+          confirmedSpecies: editSpecies,
+          endangeredStatus: editEndangered ? "endangered" : "not endangered",
+          notes: reviewNotes,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      setSelectedObs(null);
+      setEditSpecies("");
+      setEditEndangered(false);
+      setReviewNotes("");
+      fetchPending();
+    } catch (err) {
+      console.error("Failed to submit review", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const flagForVerification = async () => {
-    await axios.put(`/api/observations/review/${selected._id}`, {
-      action: "needs-verification",
-    });
-    setSelected(null);
-    setObservations((prev) => prev.filter((obs) => obs._id !== selected._id));
-  };
-
-  if (selected) {
+  if (!selectedObs) {
     return (
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold text-green-800">Observation Details</h2>
-        <img src={selected.imageUrl} className="w-full max-w-md rounded shadow" />
-        <p><strong>User:</strong> {selected.user?.name}</p>
-        <p><strong>Location:</strong> {selected.location?.coordinates?.join(', ')}</p>
-        <p><strong>Prediction:</strong> {selected.prediction.species}</p>
-        <p><strong>Confidence:</strong> {selected.prediction.confidence}%</p>
-
-        <input
-          type="text"
-          placeholder="Edit Species"
-          defaultValue={selected.prediction.species}
-          onChange={(e) => (selected.correctedSpecies = e.target.value)}
-          className="w-full border rounded p-2"
-        />
-        <input
-          type="number"
-          placeholder="Edit Confidence"
-          defaultValue={selected.prediction.confidence}
-          onChange={(e) => (selected.correctedConfidence = e.target.value)}
-          className="w-full border rounded p-2"
-        />
-
-        <div className="flex gap-3 mt-4">
-          <button onClick={markReviewed} className="bg-green-600 text-white px-4 py-2 rounded">Mark as Reviewed</button>
-          <button onClick={flagForVerification} className="bg-yellow-500 text-white px-4 py-2 rounded">Needs Verification</button>
-          <button onClick={() => setSelected(null)} className="bg-gray-400 text-white px-4 py-2 rounded">Back</button>
-        </div>
+      <div className="p-4">
+        <h2 className="text-lg font-semibold mb-4">Pending Observations</h2>
+        {Array.isArray(observations) && observations.length ? (
+          <ul className="space-y-4">
+            {observations.map((obs) => (
+              <li
+                key={obs._id}
+                className="bg-white rounded shadow p-4 flex justify-between items-center"
+              >
+                <div>
+                  <p className="font-medium">{obs.name || "Unnamed Plant"}</p>
+                  <p className="text-sm text-gray-600">
+                    {obs.prediction?.species || "No prediction"}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedObs(obs);
+                    setEditSpecies(obs.prediction?.species || "");
+                  }}
+                  className="bg-green-500 text-white px-3 py-1 rounded"
+                >
+                  Review
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No pending observations found.</p>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-bold text-green-800">Pending Observations</h2>
-      {observations.length === 0 ? (
-        <p className="text-gray-500">No pending requests.</p>
-      ) : (
-        <div className="grid gap-4">
-          {observations.map((obs) => (
-            <div key={obs._id} className="border p-4 rounded shadow bg-white flex gap-4 items-center">
-              <img src={obs.imageUrl} className="w-24 h-24 object-cover rounded" />
-              <div className="flex-1">
-                <p><strong>Species:</strong> {obs.prediction.species || "Unknown"}</p>
-                <p><strong>User:</strong> {obs.user?.name}</p>
-              </div>
-              <button
-                onClick={() => setSelected(obs)}
-                className="bg-green-700 text-white px-3 py-1 rounded"
-              >
-                Details
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+    <div className="p-4">
+      <h2 className="text-lg font-semibold mb-4">Review Observation</h2>
+      <div className="mb-4">
+        <img
+          src={selectedObs.imageUrl}
+          alt="Plant"
+          className="w-48 h-48 object-cover rounded mb-2"
+        />
+        <p className="font-medium">{selectedObs.name || "Unnamed Plant"}</p>
+      </div>
+      <div className="mb-4">
+        <label className="block mb-1 font-medium">Species Name:</label>
+        <input
+          type="text"
+          value={editSpecies}
+          onChange={(e) => setEditSpecies(e.target.value)}
+          className="border border-gray-300 rounded px-2 py-1 w-full"
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block mb-1 font-medium">Endangered Status:</label>
+        <select
+          value={editEndangered ? "endangered" : "not endangered"}
+          onChange={(e) => setEditEndangered(e.target.value === "endangered")}
+          className="border border-gray-300 rounded px-2 py-1 w-full"
+        >
+          <option value="not endangered">Not Endangered</option>
+          <option value="endangered">Endangered</option>
+        </select>
+      </div>
+      <div className="mb-4">
+        <label className="block mb-1 font-medium">Review Notes:</label>
+        <textarea
+          value={reviewNotes}
+          onChange={(e) => setReviewNotes(e.target.value)}
+          className="border border-gray-300 rounded px-2 py-1 w-full"
+        />
+      </div>
+      <div className="flex space-x-2">
+        <button
+          onClick={handleReview}
+          disabled={loading}
+          className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+        >
+          {loading ? "Submitting..." : "Submit Review"}
+        </button>
+        <button
+          onClick={() => setSelectedObs(null)}
+          className="bg-gray-300 text-black px-4 py-2 rounded"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }

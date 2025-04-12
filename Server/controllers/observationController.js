@@ -65,19 +65,39 @@ export const getAllObservations = async (req, res) => {
   );
   res.json(observations);
 };
+// This function fetches all plant observations from the database and populates the user field with name and email.
 
-export const getNearbyObservations = async (req, res) => {
-  const { latitude, longitude, distance } = req.query;
-  const radius = distance / 6378.1;
+export const getObservationsNearby = async (req, res) => {
+  try {
+    const { longitude, latitude } = req.body ;
 
-  const observations = await PlantObservation.find({
-    location: {
-      $geoWithin: { $centerSphere: [[longitude, latitude], radius] },
-    },
-  });
+    // Validate input
+    if (!longitude || !latitude) {
+      return res.status(400).json({ message: "Longitude and latitude are required." });
+    }
 
-  res.json(observations);
+    const lng = parseFloat(longitude);
+    const lat = parseFloat(latitude);
+
+    // Convert km to radians: distance / earthRadius
+    const earthRadiusInKm = 6378.1;
+    const radius = 5 / earthRadiusInKm;
+
+    const observations = await PlantObservation.find({
+      location: {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], radius],
+        },
+      },
+    });
+
+    res.status(200).json(observations);
+  } catch (error) {
+    console.error("Error fetching nearby observations:", error);
+    res.status(500).json({ error: "Failed to fetch nearby observations." });
+  }
 };
+
 
 export const getUserObservations = async (req, res) => {
   try {

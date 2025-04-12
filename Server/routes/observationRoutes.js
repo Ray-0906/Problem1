@@ -22,6 +22,10 @@ router.get("/user", protect, (req,res)=>{
   getUserObservations(req, res);
 });
 
+
+router.get("/nearby" , )
+
+
 router.get("/endangered", protect, getEndangeredSpecies);
 // Get all observations
 router.get("/", protect, getAllObservations);
