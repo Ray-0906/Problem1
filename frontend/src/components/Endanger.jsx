@@ -10,45 +10,45 @@ const EndangeredSpeciesMap = () => {
 
   useEffect(() => {
     // Hardcoded endangered species data
-    const hardcodedSpeciesData = [
-      {
-        name: "Red Panda",
-        status: "endangered",
-        coordinates: [88.6050, 27.0569]
-      },
-      {
-        name: "Snow Leopard",
-        status: "endangered",
-        coordinates: [77.3756, 32.2432]
-      },
-      {
-        name: "Great Indian Bustard",
-        status: "endangered",
-        coordinates: [72.6371, 26.9124]
-      },
-      {
-        name: "Bengal Tiger",
-        status: "endangered",
-        coordinates: [88.7264, 21.9497]
-      },
-      {
-        name: "Lion-tailed Macaque",
-        status: "endangered",
-        coordinates: [76.6026, 10.2211]
-      },
-      {
-        name: "Nilgiri Tahr",
-        status: "endangered",
-        coordinates: [77.0620, 8.7336]
-      },
-      {
-        name: "Hoolock Gibbon",
-        status: "endangered",
-        coordinates: [93.9500, 27.0000]
-      }
-    ];
+    // const hardcodedSpeciesData = [
+    //   {
+    //     name: "Red Panda",
+    //     status: "endangered",
+    //     coordinates: [88.6050, 27.0569]
+    //   },
+    //   {
+    //     name: "Snow Leopard",
+    //     status: "endangered",
+    //     coordinates: [77.3756, 32.2432]
+    //   },
+    //   {
+    //     name: "Great Indian Bustard",
+    //     status: "endangered",
+    //     coordinates: [72.6371, 26.9124]
+    //   },
+    //   {
+    //     name: "Bengal Tiger",
+    //     status: "endangered",
+    //     coordinates: [88.7264, 21.9497]
+    //   },
+    //   {
+    //     name: "Lion-tailed Macaque",
+    //     status: "endangered",
+    //     coordinates: [76.6026, 10.2211]
+    //   },
+    //   {
+    //     name: "Nilgiri Tahr",
+    //     status: "endangered",
+    //     coordinates: [77.0620, 8.7336]
+    //   },
+    //   {
+    //     name: "Hoolock Gibbon",
+    //     status: "endangered",
+    //     coordinates: [93.9500, 27.0000]
+    //   }
+    // ];
 
-    setSpeciesData(hardcodedSpeciesData);
+    // setSpeciesData(hardcodedSpeciesData);
 
     // Get user location
     navigator.geolocation.getCurrentPosition(
@@ -63,16 +63,17 @@ const EndangeredSpeciesMap = () => {
     );
 
     // You can later enable this when using real API
-    // const fetchData = async () => {
-    //   try {
-    //     const response = await axios.get('http://localhost:5000/api/observations/endangered');
-    //     setSpeciesData(response.data);
-    //   } catch (error) {
-    //     console.error("Error fetching endangered species:", error);
-    //   }
-    // };
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/endangered',{headers:{Authorization:`Bearer ${localStorage.getItem("user")}`}});
+        console.log(response.data);
+        setSpeciesData(response.data);
+      } catch (error) {
+        console.error("Error fetching endangered species:", error);
+      }
+    };
 
-    // fetchData();
+    fetchData();
   }, []);
 
   return (

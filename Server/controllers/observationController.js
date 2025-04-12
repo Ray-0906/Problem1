@@ -3,10 +3,8 @@ import User from "../models/user.js";
 import { runMLModel, runMLModel2 } from "../utils/runMLModel.js"; // we will build this
 
 export const createObservation = async (req, res) => {
-
   try {
     const { latitude, longitude } = req.body;
-
 
     const prediction = await runMLModel(req.file.path);
 
@@ -49,7 +47,7 @@ export const detectPlantDisease = async (req, res) => {
     // 🔥 Run your ML model
     const result = await runMLModel2(imagePath);
 
-    console.log("Model result:", result) ;
+    console.log("Model result:", result);
     // ✅ Send JSON response
     res.status(200).json(result);
   } catch (error) {
@@ -65,36 +63,34 @@ export const getAllObservations = async (req, res) => {
   );
   res.json(observations);
 };
-// This function fetches all plant observations from the database and populates the user field with name and email.
 
-export const getObservationsNearby = async (req, res) => {
+// controller.js
+// update the path as needed
+
+export const getNearbyObservations = async (req, res) => {
   try {
-    const { longitude, latitude } = req.body ;
+    const { latitude, longitude, radiusInKm } = req.query;
 
-    // Validate input
-    if (!longitude || !latitude) {
-      return res.status(400).json({ message: "Longitude and latitude are required." });
+    if (!latitude || !longitude || !radiusInKm) {
+      return res.status(400).json({ message: "Missing latitude, longitude or radiusInKm" });
     }
-
-    const lng = parseFloat(longitude);
-    const lat = parseFloat(latitude);
-
-    // Convert km to radians: distance / earthRadius
-    const earthRadiusInKm = 6378.1;
-    const radius = 5 / earthRadiusInKm;
 
     const observations = await PlantObservation.find({
       location: {
-        $geoWithin: {
-          $centerSphere: [[lng, lat], radius],
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [parseFloat(longitude), parseFloat(latitude)],
+          },
+          $maxDistance: parseFloat(radiusInKm) * 1000, // convert km to meters
         },
       },
     });
-
-    res.status(200).json(observations);
-  } catch (error) {
-    console.error("Error fetching nearby observations:", error);
-    res.status(500).json({ error: "Failed to fetch nearby observations." });
+ // console.log("Nearby observations:", observations);
+    res.json(observations);
+  } catch (err) {
+    console.error("Error fetching nearby observations:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -117,13 +113,12 @@ export const getUserObservations = async (req, res) => {
 };
 
 // controllers/plantObservationController.js
-
 //import PlantObservation from '../models/observeplantations.js';
 
 export const getEndangeredSpecies = async (req, res) => {
   try {
     const observations = await PlantObservation.find({
-      status: "endangered",
+    
     }).select("prediction.species status location.coordinates");
 
     const formatted = observations.map((obs) => ({
@@ -137,4 +132,21 @@ export const getEndangeredSpecies = async (req, res) => {
     console.error("Error fetching endangered species:", error);
     res.status(500).json({ message: "Server error" });
   }
+};
+
+export const approveObservation = async (req, res) => {
+  const observationId = req.params.id;
+
+  const obs = await PlantObservation.findById(observationId).populate("user");
+  if (!obs) return res.status(404).send("Observation not found");
+
+  obs.prediction.status = "ecologist-reviewed";
+  obs.isReviewed = true;
+  await obs.save();
+
+  const user = obs.user;
+  user.exp = (user.exp || 0) + 1;
+  await user.save();
+
+  res.json({ success: true, message: "Approved and rewarded" });
 };

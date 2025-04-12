@@ -12,7 +12,7 @@ export default function UserObservationHistory() {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-        console.log("Fetched observations:", res); // Debugging line
+      //  console.log("Fetched observations:", res); // Debugging line
         setObservations(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("Failed to fetch observation history:", err);
