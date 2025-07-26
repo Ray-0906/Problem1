@@ -52,6 +52,23 @@ export const runMLModel = async (imagePath) => {
   }
 };
 
+//mock 
+export const runMLModel1 = async (imagePath) => {
+  console.log(`🔍 [MOCK] Running ML model on: ${imagePath}`);
+
+  // Simulate some mock predictions
+  const mockSpecies = ['Rose', 'Sunflower', 'Neem', 'Mango', 'Unknown'];
+  const randomIndex = Math.floor(Math.random() * mockSpecies.length);
+  const species = mockSpecies[randomIndex];
+  const confidence = species === 'Unknown' ? 0.3 : +(Math.random() * 0.4 + 0.6).toFixed(2); // 0.6 to 1.0
+
+  return {
+    species,
+    confidence,
+  };
+};
+
+
 // 🌟 Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -107,4 +124,36 @@ export const runMLModel2 = async (imagePath) => {
       cure: "Could not process the image.",
     };
   }
+};
+
+// mock for disease detection
+export const runMLModel3 = async (imagePath) => {
+  console.log(`🧪 [MOCK] Running disease detection model on: ${imagePath}`);
+
+  // Mock prediction logic
+  const mockDiseases = [
+    'Powdery mildew',
+    'Leaf blight',
+    'Rust',
+    'Healthy',
+    'Bacterial wilt',
+  ];
+
+  const randomIndex = Math.floor(Math.random() * mockDiseases.length);
+  const prediction = mockDiseases[randomIndex].toLowerCase();
+
+  if (prediction.includes('healthy')) {
+    return {
+      disease: 'Healthy',
+      cure: '',
+    };
+  }
+
+  // Mocked cure (Gemini-style)
+  const mockCure = `The plant disease detected is "${prediction}". It is commonly caused by overwatering or fungal spores in humid conditions. To treat, remove affected leaves, apply appropriate fungicides, and ensure proper air circulation. Crop rotation and healthy soil management help prevent future outbreaks.`;
+
+  return {
+    disease: prediction,
+    cure: mockCure,
+  };
 };

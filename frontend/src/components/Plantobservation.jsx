@@ -14,6 +14,7 @@ export default function UserObservationHistory() {
         });
       //  console.log("Fetched observations:", res); // Debugging line
         setObservations(Array.isArray(res.data) ? res.data : []);
+        console.log("Observations set:", res.data); // Debugging line
       } catch (err) {
         console.error("Failed to fetch observation history:", err);
         setObservations([]); // fallback to empty array
@@ -38,7 +39,7 @@ export default function UserObservationHistory() {
               className="bg-white shadow-md rounded-xl p-4 border border-green-100"
             >
               <img
-                src={`/${obs.imageUrl}`}
+                src={`${obs.imageUrl}`}
                 alt="Plant"
                 className="rounded-lg h-48 w-full object-cover mb-3"
               />

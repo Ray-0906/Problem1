@@ -1,16 +1,23 @@
+import { uploadToCloudinary } from "../config/cloudinary.js";
 import PlantObservation from "../models/PlantObservation.js";
 import User from "../models/user.js";
-import { runMLModel, runMLModel2 } from "../utils/runMLModel.js"; // we will build this
+import { runMLModel1, runMLModel2} from "../utils/runMLModel.js"; // we will build this
+import fs from 'fs';
 
 export const createObservation = async (req, res) => {
   try {
     const { latitude, longitude } = req.body;
 
-    const prediction = await runMLModel(req.file.path);
-
+    const prediction = await runMLModel1(req.file.path);
+     const imageBuffer = fs.readFileSync(req.file.path); // read buffer from disk
+    const cloudinaryResult = await uploadToCloudinary(imageBuffer, {
+      folder: 'plant-observations',
+    });
+    console.log("Cloudinary upload result:", cloudinaryResult.secure_url);
+    // Upload image to Cloudinary
     const observation = new PlantObservation({
       user: req.user._id,
-      imageUrl: req.file.path,
+      imageUrl: cloudinaryResult.secure_url,
       location: {
         type: "Point",
         coordinates: [longitude, latitude],
@@ -40,13 +47,14 @@ export const createObservation = async (req, res) => {
   }
 };
 
+
 export const detectPlantDisease = async (req, res) => {
   try {
     const imagePath = req.file.path;
 
     // 🔥 Run your ML model
     const result = await runMLModel2(imagePath);
-
+   
     console.log("Model result:", result);
     // ✅ Send JSON response
     res.status(200).json(result);

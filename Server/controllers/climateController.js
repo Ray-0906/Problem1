@@ -107,7 +107,7 @@ Format the response as a JSON array like this:
       .trim();
 
     const suggestions = JSON.parse(cleanedText);
-
+    console.log("Tree suggestions:", suggestions);
     return suggestions;
   } catch (error) {
     console.error("Error fetching tree suggestions:", error.message);

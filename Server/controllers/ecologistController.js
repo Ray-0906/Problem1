@@ -76,3 +76,15 @@ export const updateObservationReview = async (req, res) => {
     res.status(500).json({ error: "Failed to update observation review." });
   }
 };
+
+export const getPendingEcologistReviews = async (req, res) => {
+  try {
+    const pendingReviews = await EcologistReview.find({ isConfirmed: false })
+      .populate("observation")
+      .populate("ecologist");
+    
+    res.status(200).json(pendingReviews);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch pending ecologist reviews." });
+  }
+}
