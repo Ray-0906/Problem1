@@ -1,5 +1,5 @@
 import Peer from 'simple-peer/simplepeer.min.js';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import socket from '../socket/socket';
 
 const VideoChat = ({ targetSocketId }) => {
@@ -7,26 +7,19 @@ const VideoChat = ({ targetSocketId }) => {
   const userVideo = useRef(null);
   const peerRef = useRef(null);
   const streamRef = useRef(null);
+  const [hasReceivedAnswer, setHasReceivedAnswer] = useState(false);
   const isUser = localStorage.getItem('role') === 'user';
+  const peerCreated = useRef(false); // Add this to track peer creation
 
   useEffect(() => {
-    if (!targetSocketId) return;
-
-    // 1. Define the signal handler function
-    const handleSignal = ({ signal }) => {
-      console.log('📥 Received signal from peer:', signal);
-      // Ensure the peer exists and hasn't been destroyed before signaling
-      if (peerRef.current && !peerRef.current.destroyed) {
-        // simple-peer will throw the error if state is wrong, no need for extra checks here.
-        // The key is ensuring this handler is not duplicated.
-        peerRef.current.signal(signal);
-      }
-    };
-
-    // 2. Attach the named handler
-    socket.on('webrtc:signal', handleSignal);
-
     const startVideoChat = async () => {
+      // Check if a peer has already been created
+      if (peerCreated.current) {
+        console.log('⏩ Peer already created, skipping');
+        return;
+      }
+      peerCreated.current = true; // Mark peer as created
+
       try {
         console.log('📞 Starting video chat - Role:', isUser ? 'user' : 'admin');
         console.log('👉 Target socket ID:', targetSocketId);
@@ -37,9 +30,7 @@ const VideoChat = ({ targetSocketId }) => {
         });
 
         streamRef.current = stream;
-        if (myVideo.current) {
-          myVideo.current.srcObject = stream;
-        }
+        myVideo.current.srcObject = stream;
 
         const peer = new Peer({
           initiator: isUser,
@@ -56,46 +47,68 @@ const VideoChat = ({ targetSocketId }) => {
 
         peer.on('stream', (remoteStream) => {
           console.log('🎥 Received remote stream');
-          if (userVideo.current) {
-            userVideo.current.srcObject = remoteStream;
-          }
+          userVideo.current.srcObject = remoteStream;
         });
 
         peer.on('error', (err) => {
           console.error('🚨 Peer error:', err);
         });
 
-        peer.on('close', () => {
-            console.log('Peer connection closed.');
+        socket.on('webrtc:signal', ({ signal }) => {
+          console.log('📥 Received signal from peer:', signal);
+
+          if (signal.type === 'answer') {
+            if (hasReceivedAnswer) {
+              console.log('⛔ Skipping duplicate answer signal');
+              return;
+            }
+            setHasReceivedAnswer(true);
+          }
+
+          try {
+            peer.signal(signal);
+          } catch (err) {
+            console.error('❌ Failed to signal peer:', err);
+          }
         });
 
+        // Cleanup function (runs when useEffect re-runs or component unmounts)
+        return () => {
+          peer.destroy();
+          stream.getTracks().forEach((track) => track.stop());
+          socket.off('webrtc:signal');
+        };
       } catch (err) {
         console.error('❌ Failed to start video chat:', err);
       }
     };
 
-    startVideoChat();
+    if (targetSocketId) {
+      startVideoChat();
+    }
 
-    // 3. Cleanup function runs on unmount or before the effect re-runs
+    socket.on('call:end', () => {
+      alert('Call ended by other party.');
+      window.location.reload();
+    });
+
+    // Cleanup for socket listeners
     return () => {
-      console.log('🧹 Cleaning up video chat effect.');
-      // Remove the specific listener to prevent duplicates
-      socket.off('webrtc:signal', handleSignal);
-
-      if (peerRef.current) {
-        peerRef.current.destroy();
-        peerRef.current = null;
-      }
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
-      }
+      socket.off('call:end');
     };
-  }, [targetSocketId, isUser]); // Dependency array is correct
+  }, [targetSocketId]);
 
   const endCall = () => {
+    if (peerRef.current) {
+      peerRef.current.destroy();
+      peerRef.current = null;
+    }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+    }
+
     socket.emit('call:end', { to: targetSocketId });
-    // Cleanup is now handled by the effect, but direct reload is fine for a hard stop
     window.location.reload();
   };
 
