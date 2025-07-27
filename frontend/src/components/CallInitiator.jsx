@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import socket from "../socket/socket";
 import CallLoader from "./CallLoader";
 import VideoChat from "./videoChat";
+import VideoChat1 from "./VideoConnect";
 
 
 const CallInitiator = () => {
@@ -39,7 +40,7 @@ const CallInitiator = () => {
   return (
     <>
       {inCall ? (
-        <VideoChat targetSocketId={adminSocketId} />
+        <VideoChat   targetSocketId={adminSocketId} />
       ) : calling ? (
         <>
           <CallLoader message="Searching for available ranger..." />

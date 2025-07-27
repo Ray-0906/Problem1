@@ -37,7 +37,7 @@ const IncomingCallList = () => {
   };
 
   return inCallWith ? (
-   <VideoChat1   socket={socket}  otherSocketId={inCallWith} />
+   <VideoChat   targetSocketId={inCallWith} />
   ) : (
     <div>
       <h3>Incoming Calls</h3>
