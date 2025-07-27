@@ -1,22 +1,24 @@
 import { defineConfig } from 'vite';
-import nodePolyfills from 'vite-plugin-node-polyfills';
+import react from '@vitejs/plugin-react';
+import rollupNodePolyFill from 'rollup-plugin-node-polyfills';
 
 export default defineConfig({
-  plugins: [
-    nodePolyfills({
-      // include specific polyfills
-      protocolImports: true,
-    }),
-  ],
+  plugins: [react()],
+  define: {
+    global: 'globalThis', // 👈 Fix "global is not defined"
+  },
   resolve: {
     alias: {
-      stream: 'stream-browserify',
-      util: 'util',
-      events: 'events/',
-      buffer: 'buffer/',
+      stream: 'rollup-plugin-node-polyfills/polyfills/stream',
+      crypto: 'rollup-plugin-node-polyfills/polyfills/crypto-browserify',
     },
   },
-  define: {
-    global: 'globalThis',
+  optimizeDeps: {
+    include: ['simple-peer'],
+  },
+  build: {
+    rollupOptions: {
+      plugins: [rollupNodePolyFill()],
+    },
   },
 });
