@@ -2,6 +2,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import 'leaflet/dist/leaflet.css';
+import axiosInstance from '../utils/axios';
 
 const EndangeredSpeciesMap = () => {
   const [speciesData, setSpeciesData] = useState([]);
@@ -65,7 +66,8 @@ const EndangeredSpeciesMap = () => {
     // You can later enable this when using real API
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/endangered',{headers:{Authorization:`Bearer ${localStorage.getItem("user")}`}});
+       
+        const response = await axiosInstance.get('/endangered',{headers:{Authorization:`Bearer ${localStorage.getItem("user")}`}});
         console.log(response.data);
         setSpeciesData(response.data);
       } catch (error) {

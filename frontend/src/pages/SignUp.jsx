@@ -2,6 +2,7 @@
 import { useState } from "react";
 import axios from "axios" ;
 import {useNavigate} from "react-router-dom" ;
+import axiosInstance from "../utils/axios";
 
 
 export default function Signup() {
@@ -23,8 +24,8 @@ export default function Signup() {
     // setError("");
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/register",
+      const res = await axiosInstance.post(
+        "/api/auth/register",
         formData
       );
 

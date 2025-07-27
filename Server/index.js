@@ -24,7 +24,7 @@ const app = express();
 app.use(cors(
   {
     origin: true, // Adjust to your frontend URL
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST","PUT", "DELETE"],
     credentials: true, // Allow cookies to be sent
   }
 ));

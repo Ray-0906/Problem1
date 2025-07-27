@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-
+import axiosInstance from "../utils/axios";
+// Ensure cookies are sent with requests
 export default function UserObservationHistory() {
   const [observations, setObservations] = useState([]);
 
   useEffect(() => {
     const fetchObservations = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/usersplant", {
+        axiosInstance.defaults.withCredentials = true; 
+        const res = await axiosInstance.get("/usersplant", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },

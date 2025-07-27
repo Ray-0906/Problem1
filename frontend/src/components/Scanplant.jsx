@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import axiosInstance from "../utils/axios";
 
 export default function ScanPlant() {
   const [image, setImage] = useState(null);
@@ -28,7 +29,8 @@ export default function ScanPlant() {
 
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.post("http://localhost:5000/api/observations/", formData, {
+        axiosInstance.defaults.withCredentials = true; // Ensure cookies are sent with requests
+        const res = await axiosInstance.post("/api/observations/", formData, {
           headers: { "Content-Type": "multipart/form-data" ,
             Authorization: `Bearer ${token}`,
           },

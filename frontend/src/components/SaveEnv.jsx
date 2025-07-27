@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import axiosInstance from '../utils/axios';
 
 export function SaveEnv() {
   const [data, setData] = useState(null);
@@ -20,9 +21,9 @@ export function SaveEnv() {
         });
 
         const city = geoRes.data.address.city || geoRes.data.address.town || geoRes.data.address.village || "Unknown";
-
-        const res = await axios.post(
-          'http://localhost:5000/api/climate/suggest-trees',
+         axiosInstance.defaults.withCredentials = true; // Ensure cookies are sent with requests
+        const res = await axiosInstance.post(
+          '/api/climate/suggest-trees',
           { latitude, longitude, city },
           {
             headers: {

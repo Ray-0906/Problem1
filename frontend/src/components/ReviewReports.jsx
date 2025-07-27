@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import axiosInstance from "../utils/axios";
 
 export default function ReviewPanel() {
   const [observations, setObservations] = useState([]);
@@ -10,7 +11,8 @@ export default function ReviewPanel() {
 
   const fetchPending = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/ecologist/pending");
+      axiosInstance.defaults.withCredentials = true; // Ensure cookies are sent with requestsaxiosInstance
+      const res = await axiosInstance.get("/api/ecologist/pending");
       setObservations(res.data);
     } catch (err) {
       console.error("Failed to load pending reports", err);
@@ -23,7 +25,8 @@ export default function ReviewPanel() {
 
   const handleReview = async () => {
     try {
-      await axios.put(`http://localhost:5000/api/ecologist/review/${selectedObs._id}`, {
+      axuosInstance.defaults.withCredentials = true; // Ensure cookies are sent with requests
+      await axiosInstance.put(`/api/ecologist/review/${selectedObs._id}`, {
         confirmedSpecies: editSpecies,
         endangeredStatus: editEndangered ? "endangered" : "not endangered",
         notes:reviewNotes,

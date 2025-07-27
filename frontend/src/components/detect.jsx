@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { UploadCloud, Loader2 } from "lucide-react";
+import axiosInstance from "../utils/axios";
 
 export default function DiseaseDetector() {
   const [image, setImage] = useState(null);
@@ -25,7 +26,7 @@ export default function DiseaseDetector() {
     formData.append("image", image);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/observations/detect", formData, {
+      const res = await axiosInstance.post("/api/observations/detect", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

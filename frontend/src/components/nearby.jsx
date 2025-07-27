@@ -3,6 +3,7 @@ import axios from "axios";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import axiosInstance from "../utils/axios";
 
 export default function NearbyReports() {
   const [reports, setReports] = useState([]);
@@ -28,7 +29,8 @@ export default function NearbyReports() {
 
   const fetchReports = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/observations/nearby", {
+      axiosInstance.defaults.withCredentials = true; 
+      const res = await axiosInstance.get("/api/observations/nearby", {
         params: {
           latitude: location.latitude,
           longitude: location.longitude,
@@ -47,15 +49,15 @@ export default function NearbyReports() {
   const handleApprove = async (reportId) => {
     try {
       setLoading(true);
-      const res = await axios.get(
-        `http://localhost:5000/api/observations/approve/${reportId}`,
-        {headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      axiosInstance.defaults.withCredentials = true; 
+      const res = await axiosInstance.get(
+      `/observations/approve/${reportId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
       setReports((prev) => prev.filter((r) => r._id !== reportId));
       alert(`✅ ${res.data.message}`);
     } catch (err) {
