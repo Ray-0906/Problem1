@@ -6,6 +6,7 @@ import UserObservationHistory from "../../components/Plantobservation";
 import { SaveEnv } from "../../components/SaveEnv";
 import EndangeredSpeciesMap from "../../components/Endanger";
 import DiseaseDetector from "../../components/detect";
+import CallInitiator from "../../components/CallInitiator";
 
 const menuItems = [
   { label: "Home", icon: <Home />, key: "home" },
@@ -14,6 +15,7 @@ const menuItems = [
   { label: "Rewards", icon: <Gift />, key: "rewards" },
   { label: "Detect Disese", icon: <Gift />, key: "detect" },
   { label: "Profile", icon: <User />, key: "profile" },
+  { label: "Call & Support", icon: <Gift />, key: "call" },
 ];
 
 export default function UserDashboard() {
@@ -37,6 +39,8 @@ export default function UserDashboard() {
         return <div>👤 <DiseaseDetector/></div>;
         case "profile":
         return <div>👤 Profile settings and account info.</div>;
+       case "call":
+        return <div>👤 <CallInitiator/></div>;  
       default:
         return null;
     }

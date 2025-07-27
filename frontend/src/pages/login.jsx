@@ -21,11 +21,14 @@ export default function Login() {
 
     try {
       const res = await axios.post("http://localhost:5000/api/auth/login", formData);
-      console.log(res);
+      
       const { token, role } = res.data;
 
       localStorage.setItem("token", token);
-      localStorage.setItem("userRole", role);
+      localStorage.setItem("role", role);
+      localStorage.setItem("userId", res.data._id);
+      console.log("Login successful:", localStorage.getItem("userId"));
+      console.log("Login successful:", localStorage.getItem("role"));
 
       if (role === "user") navigate("/udash");
       else if (role === "admin") navigate("/rangerdash");

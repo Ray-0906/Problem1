@@ -1,3 +1,4 @@
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
@@ -11,6 +12,7 @@ import Signup from './pages/SignUp.jsx';
 import UserDashboard from './pages/Dashboard/userDash.jsx';
 import RangerDashboard from './pages/Dashboard/rangerDash.jsx';
 import EcologistDashboard from './pages/Dashboard/ecoDash.jsx';
+import { LocateFixed } from 'lucide-react';
 
 // Page
 
@@ -21,7 +23,6 @@ import EcologistDashboard from './pages/Dashboard/ecoDash.jsx';
 
 const router = createBrowserRouter([
   {
-    path: '/',
     element: <App />,
     children: [
       { path: '/', element: <App /> }, 

@@ -4,6 +4,8 @@ import { ShieldCheck, MapPin, ClipboardList, AlertCircle, User, LogOut } from "l
 import NearbyReports from "../../components/nearby";
 import UnconfirmedEcologistReviews from "../../components/Assignment";
 import EndangeredSpeciesMap from "../../components/Endanger";
+import AdminCallHandler from "../../components/AdminHandler";
+import IncomingCallList from "../../components/IncomingCalls";
 
 const rangerMenu = [
   { label: "Dashboard", icon: <ShieldCheck />, key: "dashboard" },
@@ -11,6 +13,7 @@ const rangerMenu = [
   { label: "Assignments", icon: <ClipboardList />, key: "assignments" },
   { label: "Community Alerts", icon: <AlertCircle />, key: "alerts" },
   { label: "Profile", icon: <User />, key: "profile" },
+  { label: "Verify Calls", icon: <User />, key: "verify" },
 ];
 export default function RangerDashboard() {
   const [active, setActive] = useState("dashboard");
@@ -27,6 +30,8 @@ export default function RangerDashboard() {
         return <div>🚨 Emergency or critical alerts from users.</div>;
       case "profile":
         return <div>👤 Update your profile and settings.</div>;
+      case "verify":
+        return <div><IncomingCallList/></div>;  
       default:
         return null;
     }
