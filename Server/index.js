@@ -21,7 +21,13 @@ import socketHandler from "./sockets/signaling.js";
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(cors(
+  {
+    origin: true, // Adjust to your frontend URL
+    methods: ["GET", "POST"],
+    credentials: true, // Allow cookies to be sent
+  }
+));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads")); // Serve uploaded images
