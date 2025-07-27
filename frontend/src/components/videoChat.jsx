@@ -13,37 +13,48 @@ const VideoChat = ({ targetSocketId }) => {
 const localStreamRef = useRef(null);
 
 
-  useEffect(() => {
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-      myVideo.current.srcObject = stream;
+useEffect(() => {
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
+    myVideo.current.srcObject = stream;
+    localStreamRef.current = stream;
 
-      const isUser = localStorage.getItem("role") === "user";
+    const isUser = localStorage.getItem("role") === "user";
 
-      const newPeer = new Peer({
-        initiator: isUser,
-        trickle: false,
-        stream,
-      });
-
-      newPeer.on("signal", (signal) => {
-        socket.emit("webrtc:signal", { signal, to: targetSocketId });
-      });
-
-      newPeer.on("stream", (remoteStream) => {
-        userVideo.current.srcObject = remoteStream;
-      });
-
-      socket.on("webrtc:signal", ({ signal }) => {
-        newPeer.signal(signal);
-      });
-
-      setPeer(newPeer);
+    const newPeer = new Peer({
+      initiator: isUser,
+      trickle: false,
+      stream,
     });
 
-    return () => {
-      socket.off("webrtc:signal");
+    peerRef.current = newPeer;
+    setPeer(newPeer);
+
+    newPeer.on("signal", (signal) => {
+      socket.emit("webrtc:signal", { signal, to: targetSocketId });
+    });
+
+    newPeer.on("stream", (remoteStream) => {
+      userVideo.current.srcObject = remoteStream;
+    });
+
+    const handleSignal = ({ signal }) => {
+      try {
+        if (newPeer.destroyed) return;
+        newPeer.signal(signal);
+      } catch (err) {
+        console.error("Error handling signal:", err);
+      }
     };
-  }, [targetSocketId]);
+
+    socket.on("webrtc:signal", handleSignal);
+
+    return () => {
+      socket.off("webrtc:signal", handleSignal);
+      newPeer.destroy();
+    };
+  });
+}, [targetSocketId]);
+
 
   // 👇 Call end handler
   useEffect(() => {
