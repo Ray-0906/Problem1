@@ -25,6 +25,7 @@ const CallInitiator = () => {
 
   useEffect(() => {
     socket.on("call:accepted", ({ adminSocketId }) => {
+      console.log("✅ Call accepted by ranger:", adminSocketId);
       setAdminSocketId(adminSocketId);
       setCalling(false);
       setInCall(true);

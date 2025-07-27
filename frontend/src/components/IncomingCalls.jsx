@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import socket from "../socket/socket";
 import VideoChat from "./videoChat";
+import VideoChat1 from "./VideoConnect";
 
 const IncomingCallList = () => {
   const [calls, setCalls] = useState([]);
@@ -25,6 +26,7 @@ const IncomingCallList = () => {
 
   const acceptCall = (call) => {
     console.log("✅ Accepting call from:", call.userId);
+    console.log("✅ Accepting call from socket:", call.userSocketId);
     socket.emit("admin:acceptCall", {
       userId: call.userId,
       userSocketId: call.userSocketId,
@@ -35,7 +37,7 @@ const IncomingCallList = () => {
   };
 
   return inCallWith ? (
-    <VideoChat role="admin" targetSocketId={inCallWith} />
+   <VideoChat1   socket={socket}  otherSocketId={inCallWith} />
   ) : (
     <div>
       <h3>Incoming Calls</h3>
