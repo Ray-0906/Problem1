@@ -1,30 +1,28 @@
 import Peer from 'simple-peer/simplepeer.min.js';
-import { useEffect, useRef, useState } from "react";
-import socket from "../socket/socket";
+import { useEffect, useRef, useState } from 'react';
+import socket from '../socket/socket';
 
 const VideoChat = ({ targetSocketId }) => {
   const myVideo = useRef(null);
   const userVideo = useRef(null);
   const peerRef = useRef(null);
-  const localStreamRef = useRef(null);
-
-  const [peerReady, setPeerReady] = useState(false);
+  const streamRef = useRef(null);
+  const [hasReceivedAnswer, setHasReceivedAnswer] = useState(false);
+  const isUser = localStorage.getItem('role') === 'user';
 
   useEffect(() => {
-    const isUser = localStorage.getItem("role") === "user";
-    const isAdmin = localStorage.getItem("role") === "admin";
+    const startVideoChat = async () => {
+      try {
+        console.log('📞 Starting video chat - Role:', isUser ? 'user' : 'admin');
+        console.log('👉 Target socket ID:', targetSocketId);
 
-    if (isUser === isAdmin) {
-      console.warn("Invalid role or same role on both ends. Skipping peer init.");
-      return;
-    }
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
 
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-      .then((stream) => {
-        localStreamRef.current = stream;
-        if (myVideo.current) {
-          myVideo.current.srcObject = stream;
-        }
+        streamRef.current = stream;
+        myVideo.current.srcObject = stream;
 
         const peer = new Peer({
           initiator: isUser,
@@ -34,103 +32,86 @@ const VideoChat = ({ targetSocketId }) => {
 
         peerRef.current = peer;
 
-        peer.on("signal", (signal) => {
-          socket.emit("webrtc:signal", {
-            signal,
-            to: targetSocketId,
-          });
+        peer.on('signal', (signal) => {
+          console.log('📡 Sending signal to:', targetSocketId, signal);
+          socket.emit('webrtc:signal', { signal, to: targetSocketId });
         });
 
-        peer.on("stream", (remoteStream) => {
-          if (userVideo.current) {
-            userVideo.current.srcObject = remoteStream;
-          }
+        peer.on('stream', (remoteStream) => {
+          console.log('🎥 Received remote stream');
+          userVideo.current.srcObject = remoteStream;
         });
 
-        peer.on("error", (err) => {
-          console.error("Peer error:", err);
+        peer.on('error', (err) => {
+          console.error('🚨 Peer error:', err);
         });
 
-        // Listen for signal from other peer
-        const handleSignal = ({ signal }) => {
-          try {
-            // Avoid applying answer when already stable
-            const state = peer._pc.signalingState;
-            if (signal.type === "answer" && state === "stable") {
-              console.warn("Skipping duplicate answer signal");
+        socket.on('webrtc:signal', ({ signal }) => {
+          console.log('📥 Received signal from peer:', signal);
+
+          // Avoid processing duplicate answers
+          if (signal.type === 'answer') {
+            if (hasReceivedAnswer) {
+              console.log('⛔ Skipping duplicate answer signal');
               return;
             }
+            setHasReceivedAnswer(true);
+          }
 
+          try {
             peer.signal(signal);
           } catch (err) {
-            console.error("Error signaling peer:", err);
+            console.error('❌ Failed to signal peer:', err);
           }
-        };
+        });
 
-        socket.on("webrtc:signal", handleSignal);
-
-        setPeerReady(true);
-
+        // Cleanup on component unmount
         return () => {
-          socket.off("webrtc:signal", handleSignal);
+          peer.destroy();
+          stream.getTracks().forEach((track) => track.stop());
+          socket.off('webrtc:signal');
         };
-      })
-      .catch((err) => {
-        console.error("Media access error:", err);
-        alert("Failed to access camera/mic.");
-      });
-
-    // Cleanup on unmount
-    return () => {
-      if (peerRef.current) {
-        peerRef.current.destroy();
-        peerRef.current = null;
-      }
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((t) => t.stop());
-        localStreamRef.current = null;
+      } catch (err) {
+        console.error('❌ Failed to start video chat:', err);
       }
     };
-  }, [targetSocketId]);
 
-  useEffect(() => {
-    socket.on("call:end", () => {
-      alert("Call ended by other party.");
+    if (targetSocketId) {
+      startVideoChat();
+    }
+
+    // Handle remote end call
+    socket.on('call:end', () => {
+      alert('Call ended by other party.');
       window.location.reload();
     });
 
     return () => {
-      socket.off("call:end");
+      socket.off('call:end');
     };
-  }, []);
+  }, [targetSocketId]);
 
   const endCall = () => {
-    try {
-      if (peerRef.current) {
-        peerRef.current.destroy();
-        peerRef.current = null;
-      }
-
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((track) => track.stop());
-        localStreamRef.current = null;
-      }
-
-      socket.emit("call:end", { to: targetSocketId });
-
-      window.location.reload(); // or redirect
-    } catch (err) {
-      console.error("Error ending call:", err);
+    if (peerRef.current) {
+      peerRef.current.destroy();
+      peerRef.current = null;
     }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+    }
+
+    socket.emit('call:end', { to: targetSocketId });
+    window.location.reload();
   };
 
   return (
-    <div className="p-4 flex flex-col items-center space-y-4">
-      <video ref={myVideo} autoPlay muted playsInline className="w-64 h-48 bg-black rounded" />
-      <video ref={userVideo} autoPlay playsInline className="w-64 h-48 bg-black rounded" />
-      <button onClick={endCall} className="px-4 py-2 bg-red-600 text-white rounded">
-        ❌ End Call
-      </button>
+    <div>
+      <div>
+        <video ref={myVideo} autoPlay muted playsInline style={{ width: '45%' }} />
+        <video ref={userVideo} autoPlay playsInline style={{ width: '45%' }} />
+      </div>
+      <button onClick={endCall}>❌ End Call</button>
     </div>
   );
 };
