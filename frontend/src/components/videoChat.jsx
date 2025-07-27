@@ -37,7 +37,7 @@ const VideoChat = ({ role, targetSocketId }) => {
             socket.emit("send-signal", {
               signal: data,
               to: targetSocketId,
-            });
+            }); 
           });
 
           peer.on("stream", (remoteStream) => {
