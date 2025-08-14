@@ -14,10 +14,11 @@ const socketHandler = (io) => {
 
     socket.on("user:callRequest", ({ userId, verificationId }) => {
        console.log('Call revived from user:', userId);
-        activeCalls.delete(userId);
-      if (activeCalls.has(userId)){ 
+      // If a call is already tracked for this user, ignore duplicate requests
+      if (activeCalls.has(userId)) {
         console.log(`Call already in progress for user: ${userId}`);
-        return;}
+        return;
+      }
       
       activeCalls.set(userId, null);
       if (verificationId) userVerification.set(userId, verificationId);
@@ -63,6 +64,12 @@ const socketHandler = (io) => {
     socket.on("webrtc:signal", ({ signal, to }) => {
       io.to(to).emit("webrtc:signal", { signal, from: socket.id });
     });
+
+    // Simple readiness handshake so the first offer isn't lost if the receiver
+    // hasn't attached its listener yet; we just relay a one-shot ping.
+    socket.on("webrtc:ready", ({ to }) => {
+      io.to(to).emit("webrtc:peerReady", { from: socket.id });
+    });
     socket.on("call:end", ({ to }) => {
   io.to(to).emit("call:end");
 });
@@ -76,8 +83,10 @@ socket.on("call:cancelled", ({ userId }) => {
   console.log(`Socket disconnected: ${socket.id}`);
 
   // Clean up activeCalls (whether user or admin)
+  const leavingUserId = socket.handshake?.query?.userId;
   for (const [userId, adminSocketId] of activeCalls.entries()) {
-    if (socket.id === userId || socket.id === adminSocketId) {
+    // If the disconnecting socket is the tracked admin OR the same user id
+    if (socket.id === adminSocketId || userId === leavingUserId) {
       activeCalls.delete(userId);
       userVerification.delete(userId);
       io.to("admins").emit("call:cancelled", { userId });
