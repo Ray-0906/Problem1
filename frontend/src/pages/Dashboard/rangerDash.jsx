@@ -57,6 +57,7 @@ import UnconfirmedEcologistReviews from "../../components/Assignment";
 import EndangeredSpeciesMap from "../../components/Endanger";
 import AdminCallHandler from "../../components/AdminHandler";
 import IncomingCallList from "../../components/IncomingCalls";
+import RangerVerifyPanel from "../../components/RangerVerifyPanel";
 
 const rangerMenu = [
   { 
@@ -531,7 +532,7 @@ export default function RangerDashboard() {
                 </div>
               </div>
               <p className="text-gray-600 mb-6">📞 Review and verify incoming support calls from field personnel and volunteers.</p>
-              <IncomingCallList />
+              <RangerVerifyPanel />
             </div>
           </div>
         );

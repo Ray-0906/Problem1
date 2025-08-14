@@ -39,6 +39,7 @@ import { SaveEnv } from "../../components/SaveEnv";
 import EndangeredSpeciesMap from "../../components/Endanger";
 import DiseaseDetector from "../../components/detect";
 import CallInitiator from "../../components/CallInitiator";
+import PlantationVerifyPanel from "../../components/PlantationVerifyPanel";
 
 const menuItems = [
   { 
@@ -89,6 +90,13 @@ const menuItems = [
     key: "call",
     gradient: "from-teal-500 to-emerald-600",
     description: "Video Consultation"
+  },
+  {
+    label: "Plantation Campaign",
+    icon: TreePine,
+    key: "campaign",
+    gradient: "from-emerald-500 to-green-600",
+    description: "Live planting verification"
   },
 ];
 
@@ -403,6 +411,16 @@ export default function UserDashboard() {
               Expert Support & Video Chat
             </h3>
             <CallInitiator />
+          </div>
+        );
+      case "campaign":
+        return (
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <TreePine className="w-5 h-5 text-green-500 mr-2" />
+              Tree Plantation Campaign
+            </h3>
+            <PlantationVerifyPanel />
           </div>
         );
       default:

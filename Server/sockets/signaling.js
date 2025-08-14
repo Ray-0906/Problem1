@@ -1,4 +1,6 @@
 const activeCalls = new Map();
+// Map userId -> verificationId for plantation flow (optional)
+const userVerification = new Map();
 
 const socketHandler = (io) => {
   io.on("connection", (socket) => {
@@ -10,7 +12,7 @@ const socketHandler = (io) => {
       console.log(`Admin socket joined: ${socket.id}`);
     }
 
-    socket.on("user:callRequest", ({ userId }) => {
+    socket.on("user:callRequest", ({ userId, verificationId }) => {
        console.log('Call revived from user:', userId);
         activeCalls.delete(userId);
       if (activeCalls.has(userId)){ 
@@ -18,11 +20,13 @@ const socketHandler = (io) => {
         return;}
       
       activeCalls.set(userId, null);
+      if (verificationId) userVerification.set(userId, verificationId);
       const room= io.sockets.adapter.rooms.get("admins") ;
       console.log("Admins in room:", room);
       io.to("admins").emit("admin:callIncoming", {
         userId,
         userSocketId: socket.id,
+        verificationId: verificationId || null,
       });
     });
 
@@ -36,8 +40,9 @@ const socketHandler = (io) => {
       );
 
       if (userSocket) {
-        io.to(userSocket.id).emit("call:accepted", { adminSocketId: socket.id });
-        io.to(socket.id).emit("call:accepted", { userSocketId: userSocket.id });
+        const verificationId = userVerification.get(userId) || null;
+        io.to(userSocket.id).emit("call:accepted", { adminSocketId: socket.id, verificationId });
+        io.to(socket.id).emit("call:accepted", { userSocketId: userSocket.id, verificationId });
       }
     });
 
@@ -60,6 +65,7 @@ socket.on("call:cancelled", ({ userId }) => {
   for (const [userId, adminSocketId] of activeCalls.entries()) {
     if (socket.id === userId || socket.id === adminSocketId) {
       activeCalls.delete(userId);
+      userVerification.delete(userId);
       io.to("admins").emit("call:cancelled", { userId });
     }
   }
