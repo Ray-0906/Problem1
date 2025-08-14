@@ -68,7 +68,7 @@ const EndangeredSpeciesMap = () => {
       try {
        
         const response = await axiosInstance.get('/endangered',{headers:{Authorization:`Bearer ${localStorage.getItem("user")}`}});
-        console.log(response.data);
+        // console.log(response.data);
         setSpeciesData(response.data);
       } catch (error) {
         console.error("Error fetching endangered species:", error);
