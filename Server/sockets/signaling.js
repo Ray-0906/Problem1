@@ -30,7 +30,7 @@ const socketHandler = (io) => {
       });
     });
 
-    socket.on("admin:acceptCall", ({ userId }) => { 
+  socket.on("admin:acceptCall", async ({ userId }) => { 
       if (activeCalls.get(userId)) return;
 
       activeCalls.set(userId, socket.id);
@@ -41,6 +41,20 @@ const socketHandler = (io) => {
 
       if (userSocket) {
         const verificationId = userVerification.get(userId) || null;
+        // Persist socket ids onto verification for later completion end-call
+        if (verificationId) {
+          try {
+            const { default: PlantationVerification } = await import("../models/PlantationVerification.js");
+            await PlantationVerification.findByIdAndUpdate(verificationId, {
+              callMeta: { userSocketId: userSocket.id, adminSocketId: socket.id },
+              status: "in-progress",
+              acceptedAt: new Date(),
+            });
+          } catch (e) {
+            console.warn("Failed to persist callMeta:", e?.message);
+          }
+        }
+
         io.to(userSocket.id).emit("call:accepted", { adminSocketId: socket.id, verificationId });
         io.to(socket.id).emit("call:accepted", { userSocketId: userSocket.id, verificationId });
       }

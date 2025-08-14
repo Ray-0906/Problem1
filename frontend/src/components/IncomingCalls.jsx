@@ -8,7 +8,7 @@ const IncomingCallList = () => {
   const [inCallWith, setInCallWith] = useState(null);
 
   useEffect(() => {
-    socket.on("admin:callIncoming", ({ userId, userSocketId }) => {
+  socket.on("admin:callIncoming", ({ userId, userSocketId }) => {
       console.log("📥 Received incoming call from:", userId);
       setCalls((prev) => [...prev, { userId, userSocketId }]);
     });

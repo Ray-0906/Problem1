@@ -64,7 +64,7 @@ export const completeVerification = async (req, res) => {
       return res.status(400).json({ message: "Invalid decision" });
     }
 
-    const doc = await PlantationVerification.findById(id).populate("user");
+  const doc = await PlantationVerification.findById(id).populate("user");
     if (!doc) return res.status(404).json({ message: "Verification not found" });
 
     doc.status = decision;
@@ -76,6 +76,16 @@ export const completeVerification = async (req, res) => {
     if (decision === "approved" && doc.user) {
       doc.user.exp = (doc.user.exp || 0) + 50; // award 50 green points
       await doc.user.save();
+    }
+
+    // Inform both parties to end the call (if sockets known)
+    try {
+      const { io } = await import("../index.js");
+      const { userSocketId, adminSocketId } = doc.callMeta || {};
+      if (userSocketId) io.to(userSocketId).emit("call:end");
+      if (adminSocketId) io.to(adminSocketId).emit("call:end");
+    } catch (e) {
+      console.warn("call:end emit failed:", e?.message);
     }
 
     return res.json(doc);

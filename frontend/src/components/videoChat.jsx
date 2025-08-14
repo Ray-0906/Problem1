@@ -1,4 +1,4 @@
-import Peer from 'simple-peer/simplepeer.min.js';
+import Peer from 'simple-peer';
 import { useEffect, useRef, useState } from 'react';
 import socket from '../socket/socket';
 
@@ -7,7 +7,7 @@ const VideoChat = ({ targetSocketId }) => {
   const userVideo = useRef(null);
   const peerRef = useRef(null);
   const streamRef = useRef(null);
-  const [hasReceivedAnswer, setHasReceivedAnswer] = useState(false);
+  const [hasReceivedAnswer, setHasReceivedAnswer] = useState(false); // no longer used to gate candidates
   const isUser = localStorage.getItem('role') === 'user';
   const peerCreated = useRef(false); // Add this to track peer creation
 
@@ -24,7 +24,7 @@ const VideoChat = ({ targetSocketId }) => {
         console.log('📞 Starting video chat - Role:', isUser ? 'user' : 'admin');
         console.log('👉 Target socket ID:', targetSocketId);
 
-        const stream = await navigator.mediaDevices.getUserMedia({
+  const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: true,
         });
@@ -32,16 +32,29 @@ const VideoChat = ({ targetSocketId }) => {
         streamRef.current = stream;
         myVideo.current.srcObject = stream;
 
+        // Build ICE servers (add TURN from env if provided)
+        const iceServers = [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+        ];
+        const turnUrl = import.meta?.env?.VITE_TURN_URL;
+        const turnUser = import.meta?.env?.VITE_TURN_USERNAME;
+        const turnCred = import.meta?.env?.VITE_TURN_CREDENTIAL;
+        if (turnUrl && turnUser && turnCred) {
+          iceServers.push({ urls: turnUrl, username: turnUser, credential: turnCred });
+        }
+
         const peer = new Peer({
           initiator: isUser,
-          trickle: false,
+          trickle: true, // allow ICE trickle for better connectivity
+          config: { iceServers },
           stream,
         });
 
         peerRef.current = peer;
 
         peer.on('signal', (signal) => {
-          console.log('📡 Sending signal to:', targetSocketId, signal);
+          console.log('📡 Sending signal to:', targetSocketId, signal?.type || signal?.candidate ? 'candidate' : '');
           socket.emit('webrtc:signal', { signal, to: targetSocketId });
         });
 
@@ -54,17 +67,10 @@ const VideoChat = ({ targetSocketId }) => {
           console.error('🚨 Peer error:', err);
         });
 
-        socket.on('webrtc:signal', ({ signal }) => {
-          console.log('📥 Received signal from peer:', signal);
-
-          if (signal.type === 'answer') {
-            if (hasReceivedAnswer) {
-              console.log('⛔ Skipping duplicate answer signal');
-              return;
-            }
-            setHasReceivedAnswer(true);
-          }
-
+        socket.on('webrtc:signal', ({ signal, from }) => {
+          // Only accept signals from the intended peer
+          if (from !== targetSocketId) return;
+          console.log('📥 Received signal from peer:', from, signal?.type || signal?.candidate ? 'candidate' : '');
           try {
             peer.signal(signal);
           } catch (err) {
