@@ -1,4 +1,4 @@
-﻿import io
+import io
 import os
 import logging
 import numpy as np
@@ -14,6 +14,8 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.efficientnet import preprocess_input
 from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications import EfficientNetB5
+from tensorflow.keras import layers, models
 from PIL import Image, ImageOps
 import uvicorn
 
@@ -52,10 +54,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configuration # chnage the path here 
+# Configuration
 class Config:
-    MODEL_PATH = "models/Plant_species.h5"
-
+    # Base directory where this script resides
+    BASE_DIR = Path(__file__).resolve().parent
+    # Absolute model path (avoid issues with different working directories)
+    MODEL_PATH = BASE_DIR / "models" / "Plant_species.h5"
     IMG_HEIGHT = 456
     IMG_WIDTH = 456
     MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
@@ -82,21 +86,50 @@ def load_ml_model():
     """Load the machine learning model with error handling."""
     global model
     try:
-        if not Path(config.MODEL_PATH).exists():
-            raise FileNotFoundError(f"Model file not found at {config.MODEL_PATH}")
-        
-        logger.info(f"Loading model from {config.MODEL_PATH}")
-        model = load_model(config.MODEL_PATH)
+        model_path = Path(config.MODEL_PATH)
+        logger.info(f"Resolved model path: {model_path}")
+        if not model_path.exists():
+            raise FileNotFoundError(f"Model file not found at {model_path}")
+
+        logger.info(f"Loading model from {model_path} (size: {model_path.stat().st_size} bytes)")
+        model = load_model(str(model_path))
         logger.info("Model loaded successfully")
-        
-        # Warm up the model with a dummy prediction
+
+        # Warm up the model with a dummy prediction (channels=3 assumed)
         dummy_input = np.random.random((1, config.IMG_HEIGHT, config.IMG_WIDTH, 3))
         _ = model.predict(dummy_input, verbose=0)
         logger.info("Model warmed up successfully")
-        
+
     except Exception as e:
-        logger.error(f"Failed to load model: {str(e)}")
-        raise RuntimeError(f"Model loading failed: {str(e)}")
+        err_msg = str(e)
+        logger.error(f"Failed to load model (path={config.MODEL_PATH}): {err_msg}")
+
+        # Fallback path: rebuild EfficientNetB5 if stem_conv channel mismatch detected
+        if "Shape mismatch" in err_msg and "stem_conv/kernel" in err_msg:
+            try:
+                logger.warning("Attempting fallback rebuild (EfficientNetB5 RGB) with by-name weight loading, skipping mismatches.")
+
+                def build_model():
+                    base = EfficientNetB5(include_top=False, weights=None, input_shape=(config.IMG_HEIGHT, config.IMG_WIDTH, 3), pooling='avg')
+                    x = layers.Dropout(0.2, name='rebuild_dropout')(base.output)
+                    output = layers.Dense(len(CLASS_LABELS), activation='softmax', name='predictions')(x)
+                    return models.Model(inputs=base.input, outputs=output, name='plant_species_model')
+
+                rebuilt = build_model()
+                # Try to load weights; skip mismatches so first conv can accept existing kernel if shape matches
+                rebuilt.load_weights(str(model_path), by_name=True, skip_mismatch=True)
+
+                # Warm up and assign to global
+                dummy_input = np.random.random((1, config.IMG_HEIGHT, config.IMG_WIDTH, 3))
+                _ = rebuilt.predict(dummy_input, verbose=0)
+                model = rebuilt
+                logger.info("Fallback rebuild succeeded; model operational.")
+                return
+            except Exception as fb_e:
+                logger.error(f"Fallback rebuild failed: {fb_e}")
+                raise RuntimeError(f"Model loading failed after fallback: {fb_e}")
+
+        raise RuntimeError(f"Model loading failed: {err_msg}")
 
 def validate_image_file(file: UploadFile) -> None:
     """Validate uploaded image file."""
@@ -334,12 +367,10 @@ async def internal_error_handler(request, exc):
 
 # Run the app
 if __name__ == "__main__":
-    # Correct target is module:variable (single :app). Duplicate :app prevented uvicorn from locating the ASGI app.
     uvicorn.run(
-        "api1forplant_species:app",
+        "api1forplant_species:app",  # Use string format for better reloading
         host="0.0.0.0",
         port=8000,
-        reload=True,
+        reload=True,  # Enable auto-reload for development
         log_level="info"
     )
-

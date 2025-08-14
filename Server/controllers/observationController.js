@@ -1,14 +1,14 @@
 import { uploadToCloudinary } from "../config/cloudinary.js";
 import PlantObservation from "../models/PlantObservation.js";
 import User from "../models/user.js";
-import { runMLModel1, runMLModel2} from "../utils/runMLModel.js"; // we will build this
+import { runMLModel, runMLModel2} from "../utils/runMLModel.js"; // we will build this
 import fs from 'fs';
 
 export const createObservation = async (req, res) => {
   try {
     const { latitude, longitude } = req.body;
 
-    const prediction = await runMLModel1(req.file.path);
+    const prediction = await runMLModel(req.file.path);
      const imageBuffer = fs.readFileSync(req.file.path); // read buffer from disk
     const cloudinaryResult = await uploadToCloudinary(imageBuffer, {
       folder: 'plant-observations',

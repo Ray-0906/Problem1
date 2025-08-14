@@ -15,7 +15,7 @@ export const runMLModel = async (imagePath) => {
     form.append("file", fs.createReadStream(imagePath));
 
     const response = await axios.post(
-      "https://38eb-103-88-134-250.ngrok-free.app/predict/",
+      "http://localhost:8000/predict/",
       form,
       { headers: form.getHeaders() } // this sets correct multipart headers
     );
@@ -71,7 +71,7 @@ export const runMLModel2 = async (imagePath) => {
 
     // Send the image file in form-data
     const response = await axios.post(
-      "https://07e5-103-88-134-250.ngrok-free.app/predict",
+      "http://localhost:8000/predict",
       form,
       { headers: form.getHeaders() }
     );
