@@ -8,7 +8,6 @@ import {
   User, 
   LogOut, 
   Save,
-  Bell,
   Search,
   Settings,
   Award,
@@ -41,6 +40,7 @@ import DiseaseDetector from "../../components/detect";
 import CallInitiator from "../../components/CallInitiator";
 import PlantationVerifyPanel from "../../components/PlantationVerifyPanel";
 import RewardPage from "../../components/userDash/RewardPage";
+import { Profile as ProfileForm } from "../../components/Profile";
 
 const menuItems = [
   { 
@@ -78,6 +78,13 @@ const menuItems = [
     gradient: "from-red-500 to-pink-600",
     description: "Plant Health Analysis"
   },
+    {
+    label: "Plantation Campaign",
+    icon: TreePine,
+    key: "campaign",
+    gradient: "from-emerald-500 to-green-600",
+    description: "Live planting verification"
+  },
   { 
     label: "Profile", 
     icon: User, 
@@ -85,25 +92,13 @@ const menuItems = [
     gradient: "from-indigo-500 to-purple-600",
     description: "Account Settings"
   },
-  // { 
-  //   label: "Expert Support", 
-  //   icon: Phone, 
-  //   key: "call",
-  //   gradient: "from-teal-500 to-emerald-600",
-  //   description: "Video Consultation"
-  // },
-  {
-    label: "Plantation Campaign",
-    icon: TreePine,
-    key: "campaign",
-    gradient: "from-emerald-500 to-green-600",
-    description: "Live planting verification"
-  },
+
 ];
 
 export default function UserDashboard() {
   const [active, setActive] = useState("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
   const [userStats, setUserStats] = useState({
     plantsScanned: localStorage.getItem("plants") || 0,
     greenPoints:  localStorage.getItem("exp"),
@@ -151,6 +146,28 @@ export default function UserDashboard() {
     }
     return () => document.body.classList.remove('overflow-hidden');
   }, [sidebarOpen]);
+
+  // Load profile once and update stats
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      try {
+        const res = await (await import('../../utils/axios')).default.get('/api/auth/profile');
+        if (!ignore) {
+          setProfile(res.data);
+          setUserStats((prev) => ({
+            ...prev,
+            greenPoints: res.data?.exp ?? prev.greenPoints,
+            plantsScanned: res.data?.plants ?? prev.plantsScanned,
+            achievements: res.data?.achievements ?? prev.achievements,
+          }));
+        }
+      } catch (e) {
+        console.error('Profile load failed', e);
+      }
+    })();
+    return () => { ignore = true; };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -333,32 +350,14 @@ export default function UserDashboard() {
         return (
           <div className="space-y-6">
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                <User className="w-5 h-5 text-indigo-500 mr-2" />
-                Profile Settings
-              </h3>
-              <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <User className="w-12 h-12 text-white" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Environmental Enthusiast</h2>
-                <p className="text-gray-600 mb-6">Account settings and personal information</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Display Name</label>
-                    <input type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400" defaultValue="Eco Champion" />
-                  </div>
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                    <input type="email" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400" defaultValue="user@greenguard.com" />
-                  </div>
-                </div>
-                
-                <button className="mt-6 px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300">
-                  Update Profile
-                </button>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center">
+                  <User className="w-5 h-5 text-indigo-500 mr-2" />
+                  Profile Settings
+                </h3>
               </div>
+              <p className="text-gray-600 mb-6">Manage your account details. Changes will update your display name, email, and location.</p>
+              <ProfileForm />
             </div>
           </div>
         );
@@ -379,6 +378,20 @@ export default function UserDashboard() {
               <TreePine className="w-5 h-5 text-green-500 mr-2" />
               Tree Plantation Campaign
             </h3>
+            <div className="mb-5 space-y-3">
+              <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-green-600 text-white text-xs font-bold">50</span>
+                <span className="text-sm">Earn <strong>+50 Green Points</strong> for each plantation that gets approved.</span>
+              </div>
+              <p className="text-sm text-gray-600">How it works:</p>
+              <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
+                <li>Plant a sapling and capture clear photos.</li>
+                <li>Start a live verification using your camera in the panel below.</li>
+                <li>An ecologist reviews your submission and approves it.</li>
+                <li>On approval, <strong>+50 Green Points</strong> are added to your rewards automatically.</li>
+              </ul>
+              <p className="text-xs text-gray-500">Tip: good lighting and stable framing make approval faster.</p>
+            </div>
             <PlantationVerifyPanel />
           </div>
         );
@@ -428,8 +441,9 @@ export default function UserDashboard() {
                 <User className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="font-semibold text-gray-800">Eco Champion</div>
-                <div className="text-sm text-emerald-600">{greenPoints} Green Points</div>
+                <div className="font-semibold text-gray-800">{profile?.name || 'Loading…'}</div>
+                <div className="text-xs text-gray-500">{profile?.email || ''}</div>
+                <div className="text-sm text-emerald-600">{typeof profile?.exp === 'number' ? profile.exp : greenPoints} Green Points</div>
               </div>
             </div>
           </div>
@@ -511,11 +525,11 @@ export default function UserDashboard() {
             </div>
 
             <div className="flex items-center space-x-4">
-              <button className="relative w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition-colors">
-                <Bell className="w-5 h-5 text-gray-600" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-              </button>
-              <button className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition-colors">
+              <button
+                onClick={() => setActive('profile')}
+                title="Profile settings"
+                className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition-colors"
+              >
                 <Settings className="w-5 h-5 text-gray-600" />
               </button>
             </div>

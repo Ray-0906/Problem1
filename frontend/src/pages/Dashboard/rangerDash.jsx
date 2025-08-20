@@ -60,13 +60,13 @@ import IncomingCallList from "../../components/IncomingCalls";
 import RangerVerifyPanel from "../../components/RangerVerifyPanel";
 
 const rangerMenu = [
-  { 
-    label: "Command Center", 
-    icon: Shield, 
-    key: "dashboard",
-    gradient: "from-blue-500 to-cyan-600",
-    description: "Zone monitoring & control"
-  },
+  // { 
+  //   label: "Command Center", 
+  //   icon: Shield, 
+  //   key: "dashboard",
+  //   gradient: "from-blue-500 to-cyan-600",
+  //   description: "Zone monitoring & control"
+  // },
   { 
     label: "Field Reports", 
     icon: MapPinned, 
@@ -88,6 +88,13 @@ const rangerMenu = [
   //   gradient: "from-red-500 to-pink-600",
   //   description: "Emergency notifications"
   // },
+    { 
+      label: "Plantation Verification", 
+      icon: TreePine, 
+      key: "verify",
+      gradient: "from-teal-500 to-emerald-600",
+      description: "Live plantation checks via call"
+    },
   { 
     label: "Ranger Profile", 
     icon: User, 
@@ -95,18 +102,13 @@ const rangerMenu = [
     gradient: "from-indigo-500 to-purple-600",
     description: "Personnel information"
   },
-  { 
-    label: "Call Verification", 
-    icon: PhoneCall, 
-    key: "verify",
-    gradient: "from-teal-500 to-emerald-600",
-    description: "Incoming support calls"
-  },
+
 ];
 
 export default function RangerDashboard() {
   const [active, setActive] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
   const [rangerStats, setRangerStats] = useState({
     reportsHandled: 0,
     patrolsCompleted: 0,
@@ -154,6 +156,20 @@ export default function RangerDashboard() {
     }
     return () => document.body.classList.remove('overflow-hidden');
   }, [sidebarOpen]);
+
+  // Load profile once
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      try {
+        const res = await (await import('../../utils/axios')).default.get('/api/auth/profile');
+        if (!ignore) setProfile(res.data);
+      } catch (e) {
+        console.error('Profile load failed', e);
+      }
+    })();
+    return () => { ignore = true; };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -527,8 +543,8 @@ export default function RangerDashboard() {
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-800 flex items-center">
-                  <PhoneCall className="w-5 h-5 text-teal-500 mr-2" />
-                  Call Verification Center
+                  <TreePine className="w-5 h-5 text-teal-500 mr-2" />
+                  Plantation Verification
                 </h3>
                 <div className="flex items-center space-x-3">
                   <button className="flex items-center space-x-2 px-4 py-2 bg-teal-100 text-teal-600 rounded-lg hover:bg-teal-200 transition-colors">
@@ -541,7 +557,20 @@ export default function RangerDashboard() {
                   </button>
                 </div>
               </div>
-              <p className="text-gray-600 mb-6">📞 Review and verify incoming support calls from field personnel and volunteers.</p>
+              <div className="mb-5 space-y-3">
+                <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-green-600 text-white text-xs font-bold">50</span>
+                  <span className="text-sm">Users earn <strong>+50 Green Points</strong> for each plantation that gets approved after your verification.</span>
+                </div>
+                <p className="text-sm text-gray-600">Your role during verification:</p>
+                <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
+                  <li>Confirm the caller’s location and the sapling species.</li>
+                  <li>Ask the user to show the digging, planting, and watering steps live.</li>
+                  <li>Check the planted sapling, soil coverage, and surroundings.</li>
+                  <li>Add brief notes if anything looks unclear; escalate if needed.</li>
+                </ul>
+                <p className="text-xs text-gray-500">Tip: request steady framing and good lighting for quicker reviews.</p>
+              </div>
               <RangerVerifyPanel />
             </div>
           </div>
@@ -592,8 +621,9 @@ export default function RangerDashboard() {
                 <User className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="font-semibold text-gray-800">Ranger-7-Alpha</div>
-                <div className="text-sm text-blue-600">Zone 7-A Patrol</div>
+                <div className="font-semibold text-gray-800">{profile?.name || 'Loading…'}</div>
+                <div className="text-xs text-gray-500">{profile?.email || ''}</div>
+                <div className="text-sm text-blue-600">{profile?.location || '—'}</div>
               </div>
             </div>
           </div>
@@ -704,14 +734,14 @@ export default function RangerDashboard() {
             </div>
 
             <div className="flex items-center space-x-4">
-              <button className="relative w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition-colors">
-                <Bell className="w-5 h-5 text-gray-600" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-              </button>
               <button className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition-colors">
                 <Radio className="w-5 h-5 text-gray-600" />
               </button>
-              <button className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition-colors">
+              <button
+                onClick={() => setActive('profile')}
+                title="Profile settings"
+                className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition-colors"
+              >
                 <Settings className="w-5 h-5 text-gray-600" />
               </button>
             </div>

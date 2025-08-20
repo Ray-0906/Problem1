@@ -92,6 +92,7 @@ const ecoMenu = [
 export default function EcologistDashboard() {
   const [active, setActive] = useState("review");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
   const [researchStats, setResearchStats] = useState({
     reportsReviewed: 0,
     speciesValidated: 0,
@@ -139,6 +140,20 @@ export default function EcologistDashboard() {
     }
     return () => document.body.classList.remove('overflow-hidden');
   }, [sidebarOpen]);
+
+  // Load profile once
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      try {
+        const res = await (await import('../../utils/axios')).default.get('/api/auth/profile');
+        if (!ignore) setProfile(res.data);
+      } catch (e) {
+        console.error('Profile load failed', e);
+      }
+    })();
+    return () => { ignore = true; };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -523,8 +538,8 @@ export default function EcologistDashboard() {
                 <Briefcase className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="font-semibold text-gray-800">Dr. Environmental Scientist</div>
-                <div className="text-sm text-indigo-600">{researchPoints} Research Points</div>
+                <div className="font-semibold text-gray-800">{profile?.name || 'Loading…'}</div>
+                <div className="text-sm text-indigo-600">{typeof profile?.exp === 'number' ? profile.exp : researchPoints} Research Points</div>
               </div>
             </div>
           </div>
@@ -635,11 +650,11 @@ export default function EcologistDashboard() {
             </div>
 
             <div className="flex items-center space-x-4">
-              <button className="relative w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition-colors">
-                <Bell className="w-5 h-5 text-gray-600" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-              </button>
-              <button className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition-colors">
+              <button
+                onClick={() => setActive('profile')}
+                title="Profile settings"
+                className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition-colors"
+              >
                 <Settings className="w-5 h-5 text-gray-600" />
               </button>
             </div>
