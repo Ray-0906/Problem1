@@ -43,10 +43,13 @@ export default function Login() {
     try {
       const res = await axiosInstance.post("/api/auth/login", formData);
       
-      const { token, role } = res.data;
+      const { token, role ,achievements,plants,exp} = res.data;
 
       localStorage.setItem("token", token);
       localStorage.setItem("role", role);
+      localStorage.setItem("achievements", achievements);
+      localStorage.setItem("plants", plants);
+      localStorage.setItem("exp", exp);  
       localStorage.setItem("userId", res.data._id);
       console.log("Login successful:", localStorage.getItem("userId"));
       console.log("Login successful:", localStorage.getItem("role"));

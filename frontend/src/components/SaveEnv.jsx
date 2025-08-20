@@ -19,7 +19,7 @@ export function SaveEnv() {
             format: 'json',
           },
         });
-
+        console.log("Geolocation response:", geoRes.data);
         const city = geoRes.data.address.city || geoRes.data.address.town || geoRes.data.address.village || "Unknown";
          axiosInstance.defaults.withCredentials = true; // Ensure cookies are sent with requests
         const res = await axiosInstance.post(

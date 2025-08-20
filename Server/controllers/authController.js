@@ -12,10 +12,13 @@ export const registerUser = async (req, res) => {
   const user = await User.create({ name, email, password, role });
   if (user) {
     res.status(201).json({
-      _id: user._id,
+       _id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
+      exp: user.exp || 0,
+      plants:user.plantObservations.length || 0,
+      achievements: user.achievements.length || 0,
       token: generateToken(user._id),
     });
   } else {
@@ -33,6 +36,9 @@ export const loginUser = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      exp: user.exp || 0,
+      plants:user.plantObservations.length || 0,
+      achievements: user.achievements.length || 0,
       token: generateToken(user._id),
     });
   } else {
@@ -48,3 +54,6 @@ export const getUserProfile = async (req, res) => {
     res.status(404).json({ message: "User not found" });
   }
 };
+
+
+

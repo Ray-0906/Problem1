@@ -40,6 +40,7 @@ import EndangeredSpeciesMap from "../../components/Endanger";
 import DiseaseDetector from "../../components/detect";
 import CallInitiator from "../../components/CallInitiator";
 import PlantationVerifyPanel from "../../components/PlantationVerifyPanel";
+import RewardPage from "../../components/userDash/RewardPage";
 
 const menuItems = [
   { 
@@ -84,13 +85,13 @@ const menuItems = [
     gradient: "from-indigo-500 to-purple-600",
     description: "Account Settings"
   },
-  { 
-    label: "Expert Support", 
-    icon: Phone, 
-    key: "call",
-    gradient: "from-teal-500 to-emerald-600",
-    description: "Video Consultation"
-  },
+  // { 
+  //   label: "Expert Support", 
+  //   icon: Phone, 
+  //   key: "call",
+  //   gradient: "from-teal-500 to-emerald-600",
+  //   description: "Video Consultation"
+  // },
   {
     label: "Plantation Campaign",
     icon: TreePine,
@@ -104,9 +105,9 @@ export default function UserDashboard() {
   const [active, setActive] = useState("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userStats, setUserStats] = useState({
-    plantsScanned: 47,
-    greenPoints: 1250,
-    achievements: 8,
+    plantsScanned: localStorage.getItem("plants") || 0,
+    greenPoints:  localStorage.getItem("exp"),
+    achievements: localStorage.getItem("achievements") || 0,
     contributionsThisMonth: 12
   });
 
@@ -305,60 +306,7 @@ export default function UserDashboard() {
         );
       case "rewards":
         return (
-          <div className="space-y-6">
-            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-8 border border-yellow-200">
-              <div className="text-center">
-                <div className="w-20 h-20 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Gift className="w-10 h-10 text-white" />
-                </div>
-                <h2 className="text-3xl font-bold text-gray-800 mb-2">Green Rewards</h2>
-                <p className="text-gray-600 mb-6">Your earned tokens and achievements</p>
-                <div className="text-5xl font-bold text-yellow-600 mb-2">{greenPoints}</div>
-                <div className="text-gray-600">Total Green Points</div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                <h3 className="font-bold text-gray-800 mb-4">Available Rewards</h3>
-                <div className="space-y-3">
-                  {[
-                    { name: "Tree Planting Kit", cost: 500, available: true },
-                    { name: "Eco-Friendly Badge", cost: 200, available: true },
-                    { name: "Premium Features", cost: 1000, available: true },
-                    { name: "Conservation Donation", cost: 2000, available: false }
-                  ].map((reward, index) => (
-                    <div key={index} className={`flex items-center justify-between p-3 rounded-xl ${reward.available ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
-                      <span className={reward.available ? 'text-gray-800' : 'text-gray-500'}>{reward.name}</span>
-                      <span className={`font-semibold ${reward.available ? 'text-green-600' : 'text-gray-400'}`}>{reward.cost} pts</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                <h3 className="font-bold text-gray-800 mb-4">Leaderboard</h3>
-                <div className="space-y-3">
-                  {[
-                    { rank: 1, name: "You", points: greenPoints, isUser: true },
-                    { rank: 2, name: "EcoWarrior23", points: 1180 },
-                    { rank: 3, name: "GreenThumb", points: 1050 },
-                    { rank: 4, name: "TreeHugger", points: 980 }
-                  ].map((user, index) => (
-                    <div key={index} className={`flex items-center justify-between p-3 rounded-xl ${user.isUser ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50'}`}>
-                      <div className="flex items-center space-x-3">
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${user.rank <= 3 ? 'bg-yellow-500 text-white' : 'bg-gray-300 text-gray-700'}`}>
-                          {user.rank}
-                        </span>
-                        <span className={user.isUser ? 'font-bold text-emerald-700' : 'text-gray-700'}>{user.name}</span>
-                      </div>
-                      <span className={`font-semibold ${user.isUser ? 'text-emerald-600' : 'text-gray-600'}`}>{user.points} pts</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          <RewardPage/>
         );
       case "detect":
         return (
@@ -403,16 +351,16 @@ export default function UserDashboard() {
             </div>
           </div>
         );
-      case "call":
-        return (
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-              <Phone className="w-5 h-5 text-teal-500 mr-2" />
-              Expert Support & Video Chat
-            </h3>
-            <CallInitiator />
-          </div>
-        );
+      // case "call":
+      //   return (
+      //     <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+      //       <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+      //         <Phone className="w-5 h-5 text-teal-500 mr-2" />
+      //         Expert Support & Video Chat
+      //       </h3>
+      //       <CallInitiator />
+      //     </div>
+      //   );
       case "campaign":
         return (
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">

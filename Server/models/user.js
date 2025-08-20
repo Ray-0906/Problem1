@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
     location: { type: String }, // optional, useful for region-specific features
-
+    achievements: [{ type: String }], // optional, for tracking user achievements
     // ✅ Reference to Plant Observations (Array of ObjectIds)
     plantObservations: [
       {

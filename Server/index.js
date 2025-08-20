@@ -9,6 +9,7 @@ import authRoutes from "./routes/authRoutes.js";
 import observationRoutes from "./routes/observationRoutes.js";
 import ecologistRoutes from "./routes/ecologistRoutes.js";
 import plantationRoutes from "./routes/plantationRoutes.js";
+import rewardRoutes from "./routes/rewardRoutes.js";
 
 import climateRoutes from "./routes/climateRoutes.js";
 
@@ -42,6 +43,7 @@ app.use("/api/observations", observationRoutes);
 app.use("/api/ecologist", ecologistRoutes);
 app.use("/api/climate", climateRoutes);
 app.use("/api/plantation", plantationRoutes);
+app.use("/api/rewards", rewardRoutes);
        
 // Default Route
 app.get("/usersplant",protect,getUserObservations);
@@ -56,6 +58,7 @@ export const io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
+
 socketHandler(io);
 
 // Start server

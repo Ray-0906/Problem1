@@ -71,9 +71,14 @@ export default function Signup() {
         formData
       );
 
-      const { token, role } = res.data;
+     const { token, role ,achievements,plants,exp} = res.data;
+
       localStorage.setItem("token", token);
-      localStorage.setItem("userRole", role);
+      localStorage.setItem("role", role);
+      localStorage.setItem("achievements", achievements);
+      localStorage.setItem("plants", plants);
+      localStorage.setItem("exp", exp);  
+      localStorage.setItem("userId", res.data._id);
 
       // Success animation delay
       setTimeout(() => {
