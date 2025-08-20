@@ -1,0 +1,13 @@
+# FastAPI + server
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+pydantic>=2.6,<3
+
+# File uploads & imaging
+python-multipart==0.0.9
+pillow==10.3.0
+
+# ML stack (TensorFlow 2.x with built-in tf.keras)
+numpy==1.26.4
+h5py==3.10.0
+tensorflow==2.15.1
