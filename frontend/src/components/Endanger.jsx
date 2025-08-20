@@ -1,6 +1,5 @@
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import 'leaflet/dist/leaflet.css';
 import axiosInstance from '../utils/axios';
 
@@ -63,12 +62,10 @@ const EndangeredSpeciesMap = () => {
       }
     );
 
-    // You can later enable this when using real API
     const fetchData = async () => {
       try {
-       
-        const response = await axiosInstance.get('/endangered',{headers:{Authorization:`Bearer ${localStorage.getItem("user")}`}});
-        // console.log(response.data);
+  // Use secured API mounted under /api/observations
+  const response = await axiosInstance.get('/api/observations/endangered');
         setSpeciesData(response.data);
       } catch (error) {
         console.error("Error fetching endangered species:", error);
@@ -78,8 +75,12 @@ const EndangeredSpeciesMap = () => {
     fetchData();
   }, []);
 
+  const isEcologistDash = typeof window !== 'undefined' && window.location?.pathname?.toLowerCase() === '/edash';
+
   return (
     locationLoaded && (
+      <div className="space-y-4">
+        <div className="relative z-0 overflow-hidden rounded-lg shadow">
       <MapContainer center={userLocation} zoom={9} style={{ height: "500px", width: "100%" }}>
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -107,9 +108,49 @@ const EndangeredSpeciesMap = () => {
             </Popup>
           </CircleMarker>
         ))}
-      </MapContainer>
-    )
-  );
+      </MapContainer>  
+  </div>
+
+  {isEcologistDash && (
+    <div className="bg-white border rounded-lg shadow p-4 overflow-x-auto">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-lg font-semibold text-gray-800">Endangered Species (observations)</h3>
+        <span className="text-xs text-gray-500">Total: {speciesData.length}</span>
+      </div>
+      <table className="min-w-full text-sm">
+        <thead>
+          <tr className="text-left bg-gray-50">
+            <th className="px-3 py-2 font-medium text-gray-600">#</th>
+            <th className="px-3 py-2 font-medium text-gray-600">Species</th>
+            <th className="px-3 py-2 font-medium text-gray-600">Status</th>
+            <th className="px-3 py-2 font-medium text-gray-600">Latitude</th>
+            <th className="px-3 py-2 font-medium text-gray-600">Longitude</th>
+          </tr>
+        </thead>
+        <tbody>
+          {speciesData.map((s, idx) => (
+            <tr key={idx} className="border-t">
+              <td className="px-3 py-2 text-gray-700">{idx + 1}</td>
+              <td className="px-3 py-2 text-gray-800 font-medium">{s.name || 'Unknown'}</td>
+              <td className="px-3 py-2">
+                <span className={`px-2 py-0.5 rounded text-xs ${s.status === 'endangered' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                  {s.status}
+                </span>
+              </td>
+              <td className="px-3 py-2 text-gray-700">{Array.isArray(s.coordinates) ? Number(s.coordinates[1]).toFixed(5) : '—'}</td>
+              <td className="px-3 py-2 text-gray-700">{Array.isArray(s.coordinates) ? Number(s.coordinates[0]).toFixed(5) : '—'}</td>
+            </tr>
+          ))}
+          {speciesData.length === 0 && (
+            <tr>
+              <td colSpan={5} className="px-3 py-6 text-center text-gray-500">No data</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  )}
+  </div>));
 };
 
 export default EndangeredSpeciesMap;

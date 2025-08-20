@@ -93,10 +93,10 @@ export default function EcologistDashboard() {
   const [active, setActive] = useState("review");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [researchStats, setResearchStats] = useState({
-    reportsReviewed: 156,
-    speciesValidated: 23,
-    researchPoints: 2340,
-    publicationsThisYear: 7
+    reportsReviewed: 0,
+    speciesValidated: 0,
+    researchPoints: localStorage.getItem("exp") || 0,
+    publicationsThisYear: 0
   });
 
   // Animated counter hook
@@ -129,6 +129,16 @@ export default function EcologistDashboard() {
   const speciesValidated = useCounter(researchStats.speciesValidated);
   const researchPoints = useCounter(researchStats.researchPoints);
   const publications = useCounter(researchStats.publicationsThisYear);
+
+  // Lock body scroll when sidebar is open on small screens
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
+    return () => document.body.classList.remove('overflow-hidden');
+  }, [sidebarOpen]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -483,8 +493,8 @@ export default function EcologistDashboard() {
       )}
 
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:relative z-50 w-80 bg-white/95 backdrop-blur-lg border-r border-white/20 shadow-2xl transition-transform duration-300 ease-in-out`}>
-        <div className="p-6 space-y-6 h-full overflow-y-auto">
+      <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:relative inset-y-0 left-0 z-50 w-80 h-screen lg:h-auto bg-white/95 backdrop-blur-lg border-r border-white/20 shadow-2xl transition-transform duration-300 ease-in-out overflow-y-auto overscroll-contain touch-pan-y`}>
+        <div className="p-6 space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">

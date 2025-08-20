@@ -108,10 +108,10 @@ export default function RangerDashboard() {
   const [active, setActive] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [rangerStats, setRangerStats] = useState({
-    reportsHandled: 89,
-    patrolsCompleted: 34,
-    alertsResolved: 12,
-    areasCovered: 6
+    reportsHandled: 0,
+    patrolsCompleted: 0,
+    alertsResolved: 0,
+    areasCovered: 1
   });
 
   // Animated counter hook
@@ -144,6 +144,16 @@ export default function RangerDashboard() {
   const patrolsCompleted = useCounter(rangerStats.patrolsCompleted);
   const alertsResolved = useCounter(rangerStats.alertsResolved);
   const areasCovered = useCounter(rangerStats.areasCovered);
+
+  // Lock body scroll when sidebar is open on small screens
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
+    return () => document.body.classList.remove('overflow-hidden');
+  }, [sidebarOpen]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -552,8 +562,8 @@ export default function RangerDashboard() {
       )}
 
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:relative z-50 w-80 bg-white/95 backdrop-blur-lg border-r border-white/20 shadow-2xl transition-transform duration-300 ease-in-out`}>
-        <div className="p-6 space-y-6 h-full overflow-y-auto">
+      <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:relative inset-y-0 left-0 z-50 w-80 h-screen lg:h-auto bg-white/95 backdrop-blur-lg border-r border-white/20 shadow-2xl transition-transform duration-300 ease-in-out overflow-y-auto overscroll-contain touch-pan-y`}>
+        <div className="p-6 space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">

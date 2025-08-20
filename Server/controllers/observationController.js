@@ -93,7 +93,7 @@ export const getNearbyObservations = async (req, res) => {
           $maxDistance: parseFloat(radiusInKm) * 1000, // convert km to meters
         },
       },
-      status: "endangered",
+      // status: "endangered",
       isReviewed:false
       // filter by status if needed
     });

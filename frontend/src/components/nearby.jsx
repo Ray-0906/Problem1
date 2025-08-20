@@ -39,7 +39,7 @@ export default function NearbyReports() {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      console.log("Map REport field : ",res.data)
+      console.log("Nearby reports:", res.data);
       setReports(res.data);
     } catch (err) {
       console.error("Failed to fetch reports", err);
@@ -76,6 +76,16 @@ export default function NearbyReports() {
     shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
     shadowSize: [41, 41],
   });
+
+  const fmtPct = (v) => (typeof v === "number" ? `${Math.round(v * 100)}%` : "—");
+  const toLatLng = (r) => {
+    const c = r?.location?.coordinates;
+    if (Array.isArray(c) && c.length >= 2) {
+      const [lng, lat] = c; // GeoJSON order
+      return [lat, lng];
+    }
+    return [location.latitude, location.longitude];
+  };
   
   return (
     <div className="space-y-6">
@@ -83,12 +93,13 @@ export default function NearbyReports() {
         <p className="text-gray-500 text-center">📍 Acquiring your location...</p>
       ) : (
         <>
-          <MapContainer
-            center={[location.latitude, location.longitude]}
-            zoom={12}
-            style={{ height: "400px", width: "100%" }}
-            scrollWheelZoom={true}
-          >
+          <div className="relative z-0 overflow-hidden rounded-lg shadow">
+            <MapContainer
+              center={[location.latitude, location.longitude]}
+              zoom={12}
+              style={{ height: "400px", width: "100%" }}
+              scrollWheelZoom={true}
+            >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
@@ -99,19 +110,25 @@ export default function NearbyReports() {
             {reports.map((report) => (
               <Marker
                 key={report._id}
-                position={[report.location.coordinates[1], report.location.coordinates[0]]}
+                position={toLatLng(report)}
                 icon={customIcon}
               >
                 <Popup>
-                  <strong>Status:</strong> {report.prediction?.status || "Unknown"}<br />
-                  <strong>Danger:</strong> {report.status}<br />
-                  <em>{new Date(report.createdAt).toLocaleString()}</em>
+                  {report.imageUrl ? (
+                    <img src={report.imageUrl} alt="plant" style={{ width: 160, height: 90, objectFit: "cover", borderRadius: 8, marginBottom: 8 }} />
+                  ) : null}
+                  <div><strong>Species:</strong> {report.prediction?.species || "Unknown"}</div>
+                  <div><strong>Confidence:</strong> {fmtPct(report.prediction?.confidence)}</div>
+                  <div><strong>Status:</strong> {report.prediction?.status || "Unknown"}</div>
+                  <div><strong>Danger:</strong> {report.status}</div>
+                  <div className="text-xs"><em>{new Date(report.createdAt).toLocaleString()}</em></div>
                 </Popup>
               </Marker>
             ))}
-          </MapContainer>
+            </MapContainer>
+          </div>
 
-          <div className="space-y-4">
+          <div className="relative z-10 space-y-4">
             {reports.length === 0 ? (
               <p className="text-center text-gray-500">No nearby reports found.</p>
             ) : (
@@ -120,15 +137,27 @@ export default function NearbyReports() {
                   key={report._id}
                   className="bg-green-100 border border-green-300 p-4 rounded-xl shadow-md space-y-2"
                 >
-                  <div className="text-sm text-gray-700">
-                    <span className="font-semibold">Prediction:</span> {report.prediction?.status}
-                  </div>
-                  <div className="text-sm text-gray-700">
-                    <span className="font-semibold">Danger Status:</span> {report.status}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    <span className="font-semibold">Reported At:</span>{" "}
-                    {new Date(report.createdAt).toLocaleString()}
+                  <div className="flex gap-3">
+                    {report.imageUrl ? (
+                      <img src={report.imageUrl} alt="plant" className="w-28 h-20 object-cover rounded-md" />
+                    ) : null}
+                    <div className="flex-1 space-y-1">
+                      <div className="text-sm text-gray-800">
+                        <span className="font-semibold">Species:</span> {report.prediction?.species || "Unknown"}
+                      </div>
+                      <div className="text-sm text-gray-700">
+                        <span className="font-semibold">Prediction:</span> {report.prediction?.status || "—"} ({fmtPct(report.prediction?.confidence)})
+                      </div>
+                      <div className="text-sm text-gray-700">
+                        <span className="font-semibold">Danger Status:</span> {report.status}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        <span className="font-semibold">Reported At:</span> {new Date(report.createdAt).toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        <span className="font-semibold">Coords:</span> {toLatLng(report)[0].toFixed(5)}, {toLatLng(report)[1].toFixed(5)}
+                      </div>
+                    </div>
                   </div>
 
                   <button
