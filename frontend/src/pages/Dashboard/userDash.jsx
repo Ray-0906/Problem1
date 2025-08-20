@@ -274,7 +274,7 @@ export default function UserDashboard() {
         <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
           <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
             <Save className="w-5 h-5 text-green-500 mr-2" />
-            Environmental Campaigns
+            Environmental Campaigns 
           </h3>
           <SaveEnv />
         </div>
