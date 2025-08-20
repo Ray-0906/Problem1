@@ -26,7 +26,7 @@ const plantObservationSchema = new mongoose.Schema(
       },
     },
     isReviewed: { type: Boolean, default: false },
-    status:{type:String, enum:["endangered","not endangered"], default:"not endangered"},
+    status:{type:String, enum:["endangered","not endangered","ecologist-reviewed"], default:"not endangered"},
   },
   { timestamps: true }
 );

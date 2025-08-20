@@ -1,90 +1,78 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
+import axiosInstance from "../utils/axios";
 
-export default function UnconfirmedEcologistReviews() {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function RangerAssignments() {
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const fetchReviews = async () => {
+  const load = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/unconfirmed",{headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }});
-      setReviews(res.data);
-    } catch (err) {
-      console.error("Failed to fetch ecologist reviews", err);
-      alert("❌ Failed to load reviews");
+      const res = await axiosInstance.get("/api/ecologist/ranger/tasks");
+      setTasks(res.data || []);
+    } catch (e) {
+      console.error("Failed to load assignments", e);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const complete = async (id) => {
+    try {
+      setLoading(true);
+      const res = await axiosInstance.post(
+        `/api/ecologist/ranger/tasks/${id}/complete`,
+        {
+          completionNotes: "Completed on field",
+        }
+      );
+      setTasks((prev) => prev.filter((t) => t._id !== id));
+      alert("✅ Task marked as completed; +25 green points awarded.");
+    } catch (e) {
+      console.error("Failed to complete task", e);
+      alert("❌ Failed to complete task");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchReviews();
-  }, []);
-
-  const pinIcon = new L.Icon({
-    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-    shadowSize: [41, 41],
-  });
-
   return (
-    <div className="p-4 space-y-6">
-      <h2 className="text-xl font-bold text-green-700">🌿 Unconfirmed Ecologist Reviews</h2>
-
-      {loading && <p className="text-gray-500">Loading reviews...</p>}
-
-      {!loading && reviews.length === 0 && (
-        <p className="text-gray-600">No pending reviews to confirm.</p>
-      )}
-
-      {reviews.length > 0 && (
-        <>
-          <MapContainer
-            center={[reviews[0].latitude, reviews[0].longitude]}
-            zoom={7}
-            scrollWheelZoom={false}
-            style={{ height: "300px", width: "100%" }}
-            className="rounded-lg shadow"
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
-            />
-            {reviews.map((r) => (
-              <Marker
-                key={r._id}
-                position={[r.latitude, r.longitude]}
-                icon={pinIcon}
-              >
-                <Popup>
-                  <strong>{r.finalSpecies}</strong><br />
-                  {r.status}
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-
-          <div className="grid gap-4">
-            {reviews.map((review) => (
-              <div
-                key={review._id}
-                className="border border-gray-300 p-4 rounded-lg shadow"
-              >
-                <h3 className="font-semibold text-green-800 text-lg">
-                  {review.finalSpecies}
-                </h3>
-                <p>Status: <span className="font-medium">{review.status}</span></p>
-                <p>Notes: {review.notes || "—"}</p>
-                <p>Lat/Lng: {review.latitude}, {review.longitude}</p>
-              </div>
-            ))}
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">Assignments from Ecologists</h3>
+      {tasks.length === 0 ? (
+        <div className="text-sm text-gray-500">No pending assignments.</div>
+      ) : (
+        tasks.map((t) => (
+          <div key={t._id} className="p-4 rounded-xl bg-white border">
+            <div className="text-sm text-gray-600">
+              Assigned by:{" "}
+              <span className="font-medium">
+                {t.ecologist?.name || "Unknown"}
+              </span>
+            </div>
+            <div className="text-sm text-gray-800 mt-1">
+              Task: <span className="font-medium">{t.notes || "—"}</span>
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              Species: {t.finalSpecies} • Status: {t.status}
+            </div>
+            {t.observation?.imageUrl ? (
+              <img
+                alt="observation"
+                src={t.observation.imageUrl}
+                className="mt-3 w-full max-w-md rounded-lg"
+              />
+            ) : null}
+            <button
+              onClick={() => complete(t._id)}
+              disabled={loading}
+              className="mt-3 px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
+            >
+              {loading ? "Submitting..." : "Mark as Done"}
+            </button>
           </div>
-        </>
+        ))
       )}
     </div>
   );

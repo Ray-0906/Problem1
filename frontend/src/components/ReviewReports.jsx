@@ -8,12 +8,13 @@ export default function ReviewPanel() {
   const [editSpecies, setEditSpecies] = useState("");
   const [editEndangered, setEditEndangered] = useState(false);
   const [reviewNotes, setReviewNotes] = useState("");
-
+  const [rangerAssistance, setRangerAssistance] = useState(false);
   const fetchPending = async () => {
     try {
       axiosInstance.defaults.withCredentials = true; // Ensure cookies are sent with requestsaxiosInstance
       const res = await axiosInstance.get("/api/ecologist/pending");
       setObservations(res.data);
+      console.log("eco report ", res.data)
     } catch (err) {
       console.error("Failed to load pending reports", err);
     }
@@ -25,11 +26,12 @@ export default function ReviewPanel() {
 
   const handleReview = async () => {
     try {
-      axuosInstance.defaults.withCredentials = true; // Ensure cookies are sent with requests
+      axiosInstance.defaults.withCredentials = true; // Ensure cookies are sent with requests
       await axiosInstance.put(`/api/ecologist/review/${selectedObs._id}`, {
         confirmedSpecies: editSpecies,
         endangeredStatus: editEndangered ? "endangered" : "not endangered",
         notes:reviewNotes,
+        rangerAssistance: rangerAssistance,
       },{headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }});
       setSelectedObs(null);
       fetchPending();
@@ -107,9 +109,18 @@ export default function ReviewPanel() {
           />{" "}
           {editEndangered ? "Yes" : "No"}
         </div>
+         <div className="mt-4">
+          <label className="block font-medium mb-1">Need Ranger Assitance?</label>
+          <input
+            type="checkbox"
+            checked={rangerAssistance}
+            onChange={(e) => setRangerAssistance(e.target.checked)}
+          />{" "}
+          {rangerAssistance ? "Yes" : "No"}
+        </div>
 
         <div className="mt-4">
-          <label className="block mb-1 font-medium">Review Notes</label>
+          <label className="block mb-1 font-medium">Review Notes (Include Ranger Instructions)</label>
           <textarea
             value={reviewNotes}
             onChange={(e) => setReviewNotes(e.target.value)}
@@ -118,7 +129,7 @@ export default function ReviewPanel() {
             placeholder="Add any comments or notes here..."
           />
         </div>
-
+        
         <div className="mt-6 space-x-3">
           <button
             className="bg-green-600 text-white px-4 py-2 rounded"
@@ -126,12 +137,7 @@ export default function ReviewPanel() {
           >
             Mark as Reviewed
           </button>
-          <button
-            className="bg-yellow-500 text-white px-4 py-2 rounded"
-            onClick={() => alert("Marked for further verification!")}
-          >
-            Need Verification
-          </button>
+          
         </div>
       </div>
     </div>

@@ -15,7 +15,7 @@ export const runMLModel = async (imagePath) => {
     form.append("file", fs.createReadStream(imagePath));
 
     const response = await axios.post(
-      "http://localhost:8000/predict/",
+      "https://aniket2886-plant_species.hf.space/run/predict/",
       form,
       { headers: form.getHeaders() } // this sets correct multipart headers
     );

@@ -81,13 +81,13 @@ const rangerMenu = [
     gradient: "from-orange-500 to-red-600",
     description: "Tasks & patrol routes"
   },
-  { 
-    label: "Alert System", 
-    icon: Siren, 
-    key: "alerts",
-    gradient: "from-red-500 to-pink-600",
-    description: "Emergency notifications"
-  },
+  // { 
+  //   label: "Alert System", 
+  //   icon: Siren, 
+  //   key: "alerts",
+  //   gradient: "from-red-500 to-pink-600",
+  //   description: "Emergency notifications"
+  // },
   { 
     label: "Ranger Profile", 
     icon: User, 
@@ -238,9 +238,9 @@ export default function RangerDashboard() {
       </div>
 
       {/* Active Incidents & Zone Map */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
         <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-          <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
+          {/* <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
             <AlertTriangle className="w-5 h-5 text-orange-500 mr-2" />
             Active Incidents
           </h3>
@@ -279,13 +279,13 @@ export default function RangerDashboard() {
           <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
             <MapPin className="w-5 h-5 text-green-500 mr-2" />
             Zone Monitoring
-          </h3>
+          </h3> */}
           <EndangeredSpeciesMap />
         </div>
       </div>
 
       {/* Patrol Status & Communication */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
           <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
             <Compass className="w-5 h-5 text-blue-500 mr-2" />
@@ -341,7 +341,7 @@ export default function RangerDashboard() {
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 

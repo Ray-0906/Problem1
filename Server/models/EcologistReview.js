@@ -15,6 +15,7 @@ const ecologistReviewSchema = new mongoose.Schema(
     status:{ type: String, enum: ["endangered", "not endangered"], default: "not endangered" },
     finalSpecies: { type: String, required: true},
     notes: { type: String },
+    rangerAssistance: { type: Boolean, default: false },
     isConfirmed: { type: Boolean, default: true },
   },
   { timestamps: true }

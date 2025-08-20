@@ -34,7 +34,7 @@ export const updateObservationReview = async (req, res) => {
   try {
     const { id } = req.params;
     console.log(id) ;
-    const { confirmedSpecies, endangeredStatus, notes } = req.body;
+    const { confirmedSpecies, endangeredStatus, notes,rangerAssistance } = req.body;
 
     // Find the observation by ID
     const observation = await PlantObservation.findById(id);
@@ -60,6 +60,7 @@ export const updateObservationReview = async (req, res) => {
       ecologist: req.user._id, // assuming req.user is set by your auth middleware
       status: endangeredStatus, // endangered or not endangered
       finalSpecies: confirmedSpecies,
+      rangerAssistance: rangerAssistance,
       notes: notes,
       isConfirmed: true,
     });
@@ -79,7 +80,7 @@ export const updateObservationReview = async (req, res) => {
 
 export const getPendingEcologistReviews = async (req, res) => {
   try {
-    const pendingReviews = await EcologistReview.find({ isConfirmed: false })
+    const pendingReviews = await EcologistReview.find({  rangerAssistance: true })
       .populate("observation")
       .populate("ecologist");
     
@@ -88,3 +89,47 @@ export const getPendingEcologistReviews = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch pending ecologist reviews." });
   }
 }
+
+// Ranger tasks: list all reviews where ranger assistance is required
+export const getRangerTasks = async (req, res) => {
+  try {
+    const tasks = await EcologistReview.find({ rangerAssistance: true, isConfirmed: true })
+      .sort({ createdAt: -1 })
+      .populate("observation")
+      .populate("ecologist");
+    res.status(200).json(tasks);
+  } catch (e) {
+    res.status(500).json({ error: "Failed to load ranger tasks" });
+  }
+};
+
+// Ranger completes a task; mark assistance false and (optionally) add a note and award exp
+export const completeRangerTask = async (req, res) => {
+  try {
+    const { id } = req.params; // review id
+    const { completionNotes } = req.body;
+    const review = await EcologistReview.findById(id).populate("observation");
+    if (!review) return res.status(404).json({ message: "Task not found" });
+
+    review.rangerAssistance = false;
+    if (completionNotes) {
+      review.notes = review.notes ? `${review.notes}\nRanger: ${completionNotes}` : `Ranger: ${completionNotes}`;
+    }
+    await review.save();
+
+    // Award exp (green points) to the ranger user
+    try {
+      const { default: User } = await import("../models/user.js");
+      const ranger = await User.findById(req.user._id);
+      if (ranger) {
+        ranger.exp = (ranger.exp || 0) + 25; // small reward for completing assignment
+        await ranger.save();
+      }
+    } catch {}
+
+    res.json({ message: "Task marked as completed", review });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to complete task" });
+  }
+};
+

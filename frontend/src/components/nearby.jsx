@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -40,6 +39,7 @@ export default function NearbyReports() {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
+      console.log("Map REport field : ",res.data)
       setReports(res.data);
     } catch (err) {
       console.error("Failed to fetch reports", err);
@@ -50,8 +50,8 @@ export default function NearbyReports() {
     try {
       setLoading(true);
       axiosInstance.defaults.withCredentials = true; 
-      const res = await axiosInstance.get(
-      `/observations/approve/${reportId}`,
+  const res = await axiosInstance.get(
+  `/api/observations/approve/${reportId}`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,

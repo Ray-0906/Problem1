@@ -93,6 +93,9 @@ export const getNearbyObservations = async (req, res) => {
           $maxDistance: parseFloat(radiusInKm) * 1000, // convert km to meters
         },
       },
+      status: "endangered",
+      isReviewed:false
+      // filter by status if needed
     });
  // console.log("Nearby observations:", observations);
     res.json(observations);
@@ -124,9 +127,11 @@ export const getUserObservations = async (req, res) => {
 //import PlantObservation from '../models/observeplantations.js';
 
 export const getEndangeredSpecies = async (req, res) => {
+   
+  // console.log(" recived  recieved");
   try {
     const observations = await PlantObservation.find({
-    
+    // status: "endangered",
     }).select("prediction.species status location.coordinates");
 
     const formatted = observations.map((obs) => ({
@@ -146,15 +151,15 @@ export const approveObservation = async (req, res) => {
   const observationId = req.params.id;
 
   const obs = await PlantObservation.findById(observationId).populate("user");
+  console.log("recived  ...");
   if (!obs) return res.status(404).send("Observation not found");
 
   obs.prediction.status = "ecologist-reviewed";
   obs.isReviewed = true;
   await obs.save();
-
   const user = obs.user;
-  user.exp = (user.exp || 0) + 1;
+  user.exp = (user.exp || 0) + 50;
   await user.save();
-
+   
   res.json({ success: true, message: "Approved and rewarded" });
 };

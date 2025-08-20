@@ -59,13 +59,13 @@ const ecoMenu = [
     gradient: "from-blue-500 to-cyan-600",
     description: "Validate user submissions"
   },
-  { 
-    label: "Research Submissions", 
-    icon: CheckCircle, 
-    key: "submissions",
-    gradient: "from-green-500 to-emerald-600",
-    description: "Approve new discoveries"
-  },
+  // { 
+  //   label: "Research Submissions", 
+  //   icon: CheckCircle, 
+  //   key: "submissions",
+  //   gradient: "from-green-500 to-emerald-600",
+  //   description: "Approve new discoveries"
+  // },
   { 
     label: "Species Database", 
     icon: Database, 
