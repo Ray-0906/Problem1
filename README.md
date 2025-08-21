@@ -2,6 +2,32 @@
 
 Full‑stack app for plant observations, AI plant/disease detection, climate‑informed tree suggestions, endangered species visualization, and expert (ecologist) review workflows.
 
+## Features
+- AI plant identification (species)
+  - Identify plant species from uploaded images using the species ML model
+- Disease detection with cure suggestions
+  - Detect plant diseases from images and generate concise, farmer‑friendly cure guidance
+- Rewards and leaderboard (EXP = green points)
+  - Leaderboard filtered to users; ranger tasks completion awards +25 points
+- Ranger assignments
+- Realtime plantation verification calls (WebRTC + Socket.IO)
+  - Modern, compact UI with controls, picture‑in‑picture, duration, and status
+  - STUN only (no TURN), trickle ICE, buffered signaling, clean teardown
+- Plant observations and nearby feed
+  - Upload with geolocation; ecologist/ranger review flows; approval awards +50 points
+  - Nearby list shows species, confidence, image, and normalized coordinates
+  - Ecologists assign tasks (e.g., protect endangered sightings, remove threats, verify plantation); rangers mark done and earn rewards
+- Endangered species map + table
+  - Identify and surface endangered species; ecologist experts validate; map with proper z‑index behavior; species summary table under map
+- Profiles and dashboards
+  - Real user data (name, email, location, exp); edit profile; mobile‑friendly sidebars
+  - Consistent headers: settings → Profile; notification icon removed
+- Climate‑based tree suggestions
+  - Open‑Meteo climate data + Mistral AI suggestions; reverse geocoding via OpenCage with Nominatim fallback; cache + heuristic fallback
+- ML integration (models not deployed here by default — run locally or deploy your own)
+  - Species and disease detection services (FastAPI + TensorFlow/PyTorch)
+- Deployable ML API on Render (render.yaml included)
+
 - Backend: Node.js + Express + MongoDB + Socket.IO
 - Frontend: React (Vite) + Tailwind
 - ML services: FastAPI (species + disease)
@@ -13,7 +39,7 @@ Full‑stack app for plant observations, AI plant/disease detection, climate‑i
 ├── Server/                # Express API + Socket.IO + MongoDB
 │   ├── index.js           # App entry, routes mount, Socket.IO
 │   ├── config/            # db.js (Mongo), cloudinary.js
-│   ├── controllers/       # auth, observations, ecologist, climate (Gemini)
+│   ├── controllers/       # auth, observations, ecologist, climate (Mistral + Open‑Meteo + OpenCage)
 │   ├── middlewares/       # auth (JWT), multer upload
 │   ├── models/            # User, PlantObservation, EcologistReview
 │   ├── routes/            # auth, observations, ecologist, climate
@@ -58,8 +84,10 @@ CLOUDINARY_API_SECRET=your-api-secret
 # Reverse geocoding (OpenCage)
 OPENCAGE_API_KEY=your-opencage-api-key
 
-# Google Gemini (Generative AI)
-GEMINI_API_KEY=your-google-genai-api-key
+# Mistral AI (climate tree suggestions)
+MISTRAL_API_KEY=your-mistral-api-key
+# Optional: Gemini if other features use it
+# GEMINI_API_KEY=your-google-genai-api-key
 ```
 
 Create a `.env` file in `frontend/` with:
@@ -129,8 +157,9 @@ Mounted in `Server/index.js`:
 
 - /api/climate
   - POST /suggest-trees → suggestTreesController
-    - Body: { latitude, longitude, cityName }
-    - Internals: Open‑Meteo + Gemini to suggest species
+    - Body: { latitude, longitude } (server resolves city via OpenCage/Nominatim)
+    - Internals: Open‑Meteo + Mistral to suggest species; cached; heuristic fallback on rate‑limit
+  - GET  /reverse-geocode?lat=&lon= → { city }
 
 Additional top‑level routes (from `index.js`):
 
@@ -169,18 +198,27 @@ Key components:
 - DiseaseDetector → POST /api/observations/detect (file)
 - EndangeredSpeciesMap → GET endangered species data
 - ReviewPanel (ecologist) → GET/PUT ecologist endpoints
-- SaveEnv → POST /api/climate/suggest-trees (Gemini suggestions)
+- SaveEnv → POST /api/climate/suggest-trees (Mistral suggestions; server reverse‑geocodes city)
 
 ## Notes on ML integration
 
 `Server/utils/runMLModel.js` calls two endpoints assumed to run locally:
 
 - Species: POST http://localhost:8000/predict/ (multipart form-data, field `file`)
-- Disease: POST http://localhost:8000/predict (multipart form-data, field `file`)
+- Disease: POST http://localhost:8000/disease/predict (multipart form-data, field `file`)
 
 The included disease API (`ML/api2forplant_disease`) expects base64 JSON at `/predict`. If you use that file directly, update `runMLModel2` to send base64 JSON; otherwise expose a multipart endpoint that forwards to it.
 
-Gemini usage: `GEMINI_API_KEY` is required for tree suggestions and disease cure write‑ups. Model: `gemini-1.5-pro`.
+Climate suggestions use Mistral via `MISTRAL_API_KEY`. Some optional content may use Gemini if present.
+
+## Deployment (ML service on Render)
+
+- `render.yaml` at repo root defines a FastAPI web service for species model:
+  - Build: `pip install -r ML/requirements.txt`
+  - Start: `uvicorn ML.api1forplant_species:app --host 0.0.0.0 --port $PORT --workers 1`
+  - Health: `/health`
+  - Requires model at `ML/models/Plant_species.h5`
+  - See `ML/DEPLOY_RENDER.md` for details
 
 ## Troubleshooting
 

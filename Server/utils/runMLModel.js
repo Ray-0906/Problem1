@@ -3,12 +3,10 @@ import fs from "fs";
 import dotenv from "dotenv";
 import path from "path";
 import FormData from "form-data";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 dotenv.config();
 
-//plant species identification
-
+// 🌱 Plant Species Identification
 export const runMLModel = async (imagePath) => {
   try {
     const form = new FormData();
@@ -17,7 +15,7 @@ export const runMLModel = async (imagePath) => {
     const response = await axios.post(
       "https://aniket2886-plant_species.hf.space/run/predict/",
       form,
-      { headers: form.getHeaders() } // this sets correct multipart headers
+      { headers: form.getHeaders() }
     );
 
     const data = response.data;
@@ -40,16 +38,17 @@ export const runMLModel = async (imagePath) => {
   }
 };
 
-
-//mock 
+// 🌱 Mock for Species
 export const runMLModel1 = async (imagePath) => {
   console.log(`🔍 [MOCK] Running ML model on: ${imagePath}`);
 
-  // Simulate some mock predictions
-  const mockSpecies = ['Rose', 'Sunflower', 'Neem', 'Mango', 'Unknown'];
+  const mockSpecies = ["Rose", "Sunflower", "Neem", "Mango", "Unknown"];
   const randomIndex = Math.floor(Math.random() * mockSpecies.length);
   const species = mockSpecies[randomIndex];
-  const confidence = species === 'Unknown' ? 0.3 : +(Math.random() * 0.4 + 0.6).toFixed(2); // 0.6 to 1.0
+  const confidence =
+    species === "Unknown"
+      ? 0.3
+      : +(Math.random() * 0.4 + 0.6).toFixed(2); // 0.6 to 1.0
 
   return {
     species,
@@ -57,24 +56,20 @@ export const runMLModel1 = async (imagePath) => {
   };
 };
 
+// 🌟 Initialize Mistral API
+const MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions";
+const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 
-// 🌟 Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// 🌱 Plant Disease Detection
-
+// 🌱 Plant Disease Detection (Mistral instead of Gemini)
 export const runMLModel2 = async (imagePath) => {
   try {
-    // Prepare multipart form-data
+    // Send image for prediction
     const form = new FormData();
     form.append("file", fs.createReadStream(imagePath));
 
-    // Send the image file in form-data
-    const response = await axios.post(
-      "http://localhost:8000/predict",
-      form,
-      { headers: form.getHeaders() }
-    );
+    const response = await axios.post("http://localhost:8000/predict", form, {
+      headers: form.getHeaders(),
+    });
 
     const data = response.data;
     console.log("Disease ML API Response:", data);
@@ -82,25 +77,35 @@ export const runMLModel2 = async (imagePath) => {
     const prediction = data?.prediction?.toLowerCase() || "unknown";
 
     if (prediction.includes("healthy")) {
-      // 🌿 Plant is healthy
       return {
         disease: "Healthy",
         cure: "",
       };
     } else {
-      // 🌾 Plant has disease, generate cure write-up
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-
+      // 🌾 Ask Mistral for cure explanation
       const prompt = `The plant disease detected is "${prediction}". Please provide a detailed explanation about this disease, its causes, and remedies for farmers to treat and prevent it effectively. Write within 100 words.`;
 
-      const result = await model.generateContent(prompt);
-      const responseText =
-        result?.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      const mistralResp = await axios.post(
+        MISTRAL_API_URL,
+        {
+          model: "mistral-medium-3", // ✅ You can use mistral-large-latest if available
+          messages: [{ role: "user", content: prompt }],
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${MISTRAL_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const cure =
+        mistralResp.data.choices?.[0]?.message?.content ||
         "No information found.";
 
       return {
         disease: prediction,
-        cure: responseText.trim(),
+        cure: cure.trim(),
       };
     }
   } catch (error) {
@@ -115,31 +120,28 @@ export const runMLModel2 = async (imagePath) => {
   }
 };
 
-
-// mock for disease detection
+// 🌱 Mock for Disease Detection
 export const runMLModel3 = async (imagePath) => {
   console.log(`🧪 [MOCK] Running disease detection model on: ${imagePath}`);
 
-  // Mock prediction logic
   const mockDiseases = [
-    'Powdery mildew',
-    'Leaf blight',
-    'Rust',
-    'Healthy',
-    'Bacterial wilt',
+    "Powdery mildew",
+    "Leaf blight",
+    "Rust",
+    "Healthy",
+    "Bacterial wilt",
   ];
 
   const randomIndex = Math.floor(Math.random() * mockDiseases.length);
   const prediction = mockDiseases[randomIndex].toLowerCase();
 
-  if (prediction.includes('healthy')) {
+  if (prediction.includes("healthy")) {
     return {
-      disease: 'Healthy',
-      cure: '',
+      disease: "Healthy",
+      cure: "",
     };
   }
 
-  // Mocked cure (Gemini-style)
   const mockCure = `The plant disease detected is "${prediction}". It is commonly caused by overwatering or fungal spores in humid conditions. To treat, remove affected leaves, apply appropriate fungicides, and ensure proper air circulation. Crop rotation and healthy soil management help prevent future outbreaks.`;
 
   return {
